@@ -5,10 +5,11 @@
 
 
 # Load required packages and functions
-source(setup.R)
+source("setup.R")
+Sys.setlocale('LC_ALL','C') 
 
 ## Load all ORIA + UA
-load("regs.Rdata")
+load( url("https://github.com/judgelord/reginfo.gov/raw/master/data/OIRAandUA.Rdata") )
 ## or
 # regs <- read.csv("Data/OIRA and UA.csv")
 
@@ -18,8 +19,9 @@ load("regs.Rdata")
 dot <- read.csv("reports/DOTclean/200801DOTclean.csv")
 
 # Read in the rest
-for(i in length(list.files(path = "reports/DOTclean/"))){
-  dot <- rbind(dot, read.csv(i))
+for( i in list.files(path = "reports/DOTclean/") ){
+  print(c(i, dim(read.csv(here("reports/DOTclean/", i)))))
+  dot <- rbind(dot, read.csv(here("reports/DOTclean/", i)))
 }
 
 # MISSING:
@@ -208,7 +210,7 @@ sum(grepl("/", dot$WithdrawalPublished))
 dot$Terminated <- NA
 for(i in 1:dim(dot)[1]){
   if(
-    grepl("Terminat.*", dot$STAGE[i])
+    grepl("Terminat.*", dot$stage[i])
   )
     dot$Terminated[i] <- as.character(dot$publicationactual[i])
 }
@@ -281,7 +283,7 @@ dot$stage <- gsub("A.N.P.R.M.", "ANPRM", dot$stage)
 dot$stage <- gsub("A.N.P.R.M.", "ANPRM", dot$stage)
 
 # format dates
-Sys.setlocale('LC_ALL','C') 
+
 dot$docket <- gsub(pattern = "<..>","-", dot$docket, ignore.case=TRUE)
 
 
@@ -320,6 +322,12 @@ dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub("^,|^, |^ ,", "", dot$whydelay)
 
+
+
+
+
+
+###########################################################################################
 # change name of stage to match Unified Agenda
 names(dot) <- gsub("^stage", "STAGE", names(dot))
 dot$STAGE <- gsub(" NPRM", "NPRM", dot$STAGE)
@@ -418,8 +426,9 @@ DOTall <- dot
 #############################################################
 
 # merge data
-dot <- full_join(dotlast, 
-                     regs %>% filter( grepl("^21", RIN) ) )# subset to only DOT RINs
+dot <- full_join(dotlast,
+                 # subset OIRA and Unified Agenda  to only DOT RINs
+                 d %>% filter( grepl("^21", RIN) ) ) 
 
 dot <- unique.data.frame(dot)
 
@@ -674,7 +683,10 @@ dot %<>% arrange(desc(reportdate)) %>%
   transform(IFRDeadline = ave(IFRDeadline, RIN, FUN = CopyIfNA)) %>%
   transform(NPRMDeadline = ave(NPRMDeadline, RIN, FUN = CopyIfNA)) 
   
-  
+##########################################################################################################################################################################################
+# try again with new UA 
+##########################################################################################################################################################################################
+
 # Comment
 dot$ANPRMcomment[which(is.na(dot$ANPRMcomment) & dot$STAGE=="Prerule")] <- dot$endcommentactual[which(is.na(dot$ANPRMcomment) & dot$STAGE=="Prerule")]
 dot$NPRMcomment[which(is.na(dot$NPRMcomment) & dot$STAGE=="Proposed Rule")] <- dot$endcommentactual[which(is.na(dot$NPRMcomment) & dot$STAGE=="Proposed Rule")]
@@ -871,16 +883,16 @@ unique(DOTmonthly$stage)
 ###########################################################
 
 # write out entire DOT data as master
-write.csv(DOTmonthly, file = "Data/DOT Monthly.csv")
+write.csv(DOTmonthly, file = "data/DOT Monthly.csv")
 
 # write out only last observations per stage as "rules"
-write.csv(dot, file = "Data/DOT Rule Stages.csv")
+write.csv(dot, file = "data/DOT Rule Stages.csv")
 
 # write out combined
-write.csv(dotRIN, file = "Data/DOT Rules.csv")
+write.csv(dotRIN, file = "data/DOT Rules.csv")
 
 # list of variables
-write.csv(names(dot), file = "Data/DOT variables.csv")
+write.csv(names(dot), file = "DOT variables.csv")
 
-# safe Rdata
-save.image("Data/DOT.Rdata")
+# save Rdata
+save.image("DOT.Rdata")
