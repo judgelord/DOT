@@ -7,7 +7,16 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-requires <- c("tidyr", "broom", "knitr", "dplyr", "ggplot2", "magrittr", "stargazer", "dotwhisker")
+requires <- c("tidyr", 
+              "broom", 
+              "knitr", 
+              "dplyr", 
+              "ggplot2", 
+              "magrittr", 
+              "stargazer", 
+              # "dotwhisker",
+              "survival")
+
   to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
   install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
   library(tidyr)
@@ -17,12 +26,19 @@ requires <- c("tidyr", "broom", "knitr", "dplyr", "ggplot2", "magrittr", "starga
   library(stargazer)
   library(knitr)
   library(broom)
-  library(dotwhisker)
+  #library(dotwhisker) # need to reinstall ggplot2
+  library(survival)
 
-load("correspondence.RData")
+# load("correspondence.RData")
 
 # ABSTRACT NOTES
 # https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
+
+# Variables
+# https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing
+  
+  # 2016 OPM fedscope text files
+  # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
 ```
 
 ```{r global.options, include=FALSE}
@@ -42,4 +58,60 @@ Using these new data and measures, we model the drivers of prioritization and co
 
 Our findings hold important implications for our understanding of transparency and bureaucratic policymaking within a representative democracy.
 
+# To-do:
+
+Find a method to identify the year of earch rule's authorizing statute
+
+
+
+# Data
+```{r timeline, fig.height = 7}
+
+
+
+```
+
+
+# Core Model
+
+
+
+
+
+
+# Covariates
+
+
+## Congressional attention/opposition: 
+
+2018 appropriations subcommittee report. Below are examples of positive and negative sentiment about the FAA. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.
+
+Examples:
+
+POSITIVE: 
+
+The Committee is encouraged 
+by the additional measures the FAA is taking to enhance 
+outreach to communities affected by new flightpaths. The 
+Committee recommendation includes an additional $2,000,000 to 
+support the FAA's ongoing efforts to address community noise 
+concerns.
+The Committee supports 
+research that is being conducted through the FAA's Center of 
+Excellence for Alternative Jet Fuel and Environment, the 
+Aviation Sustainability Center (ASCENT) on the impact of 
+aviation noise on both sleep and cardiovascular health.
+The Committee commends the FAA Office 
+of Commercial Space Transportation's efforts to promote private 
+sector lunar exploration and development and encourages the FAA 
+to explicitly define non-interference and to enhance its 
+payload review process to provide companies planning private 
+sector lunar development with the security and predictability 
+necessary to support substantial investments. 
+
+NEGATIVE:
+
+The Committee is concerned by the FAA's decision to 
+extend by five years its aging Mission Support Network, a 
+decision which carries both technology and cost implications. 
 
