@@ -1,5 +1,5 @@
 ---
-title: "summary"
+title: "DOT project summary"
 output: 
    html_document:
     toc: true
@@ -62,6 +62,39 @@ Our findings hold important implications for our understanding of transparency a
 
 Find a method to identify the year of earch rule's authorizing statute
 
+```{asis, include = FALSE}
+There are 390 unique RINs for which we have the date at which they were initiated. Of these, 144 were delayed and 183 were not delayed at the time they were last observed. However, part of this is due to the trend for DOT to claim that an increasing number of projects are not on a schedule (the “Black” category). 215 projects were delayed and give a reason for delay at some point.
+286 Were initiated after 2008. Of these 138 have Final Rules Published and 7 have been withdrawn.
+
+Published
+Received by ORIA
+Days Until OST
+Days Until Published
+ANPRMs
+50
+13
+219.9412
+408.16
+NPRMs
+267
+95
+619.6
+1001.914
+SNPRMs
+18
+4
+Final Rules
+228
+138
+1309.528
+1512.996
+Interim Final Rules
+18
+10
+Withdrawals
+17
+1484.118
+```
 
 
 # Data
