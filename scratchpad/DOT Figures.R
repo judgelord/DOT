@@ -133,9 +133,9 @@ ggplot(d %>% filter(initiated > as.Date("2008-01-01")), aes(x=RIN)) +
   geom_point(aes(y=ANPRMpublished, color="pink"), shape = 15, size=.4) + 
   geom_point(aes(y=NPRMpublished, color="magenta"), shape = 15, size=.4) + 
   geom_point(aes(y=SNPRMpublished, color="purple"), shape = 15, size=.4) + 
-  geom_point(aes(y=IFRpublished, color="Sky Blue"), shape = 15, size=.4) + 
-  geom_point(aes(y=WithdrawalPublished, color="red"), shape = 4, size=1) + 
-  geom_point(aes(y=Terminated, color="red4"), shape = 4, size=1) + 
+  geom_point(aes(y=IFRpublished), color="Sky Blue", shape = 15, size=.4) + 
+  geom_point(aes(y=WithdrawalPublished), color="red", shape = 4, size=1) + 
+  geom_point(aes(y=Terminated), color="red4", shape = 4, size=1) + 
   #geom_point(aes(y=red, color="red"), shape = "D", size=.6) + 
   #geom_point(aes(y=yellow, color="yellow"), shape = "D", size=.6) + 
   #geom_point(aes(y=green, color="green"), shape = "D", size=.6) + 

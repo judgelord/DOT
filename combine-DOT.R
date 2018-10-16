@@ -374,10 +374,8 @@ for(i in 1:dim(dot)[1]){
   }}
 
 
-# Select things that vary by month
-dotMonthly <- select(dot, RIN, STAGE, date, color, 
-                     whydelay, whydelay1, whydelay2, whydelay3, whydelay4, whydelay5, whydelay6, whydelay7, whydelay8,
-                     effects)
+dotALL <- dot
+
 
 # select the most recent observation for each RIN at each Stage
 dot <- dplyr::group_by(dot, RIN, STAGE)
@@ -760,7 +758,7 @@ for(x in c(76:86, 151, 166:180, 182:212)){
 }
 x
 names(dot)[x]
-sort(dot[, x])
+# sort(dot[, x])
 
 
 
@@ -892,7 +890,16 @@ dotRIN <- dot %>%
 
 # Merge with full DOT monthly dataset
 # IS THIS ALL OF THE MONTHLY VARIANCE (DATES DON'T CHANGE, RIGHT?)
-dotMonthly %<>%  left_join(dot)
+# Select things that vary by month
+dotMonthly <- select(dotALL, RIN, STAGE, 
+                     date, color, abstract, DOTdate, prompt, 
+                     whydelay, whydelay1, whydelay2, whydelay3, whydelay4, whydelay5, whydelay6, whydelay7, whydelay8,
+                     effects)
+
+# merge on RIN and STAGE, delete everything that varies monthly:
+dotMonthly %<>%  left_join(dot %>% select(-date, -color, -abstract, -DOTdate, -prompt, 
+                                  -whydelay, -whydelay1, -whydelay2, -whydelay3, -whydelay4, -whydelay5, -whydelay6, -whydelay7, -whydelay8,
+                                  -effects))
 dotMonthly <- dplyr::arrange(dotMonthly, desc(RIN))
 
 dotMonthly$STAGE <- gsub("Terminat.*", "Termination", dotMonthly$STAGE)

@@ -1,0 +1,184 @@
+---
+title: "DOT project summary"
+output: 
+   html_document:
+    toc: true
+    code_folding: hide
+ params: 
+  output_dir: "../gh-pages"
+---
+---
+
+```{r setup, include=FALSE}
+source("setup.R")
+
+
+# ABSTRACT NOTES
+# https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
+
+# Variables
+# https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing
+  
+  # 2016 OPM fedscope text files
+  # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
+```
+
+```{r global.options, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      cache = F, 
+                      fig.width=8.5, fig.align = 'center', fig.path='Figs/',
+                      warning=FALSE, message=FALSE)
+```
+
+# Abstract
+
+Administrative rulemaking is often conceptualized as a straightforward translation of legislative delegations into agency rules, where bureaucrats adopt their most preferred policy given their constraints, often speeding up or slowing down the policy process to do so. The rulemaking process is indeed highly formulaic, requiring publication of a draft, external review, and public comment before a final rule is published. However, much of the politics of rulemaking may play out in the less formal and transparent process before a draft policy is published. In this stage, different priorities and constraints may drive decisions about which draft policies are published and when.
+
+Theories of policymaking suggest that the politics of rulemaking may differ significantly in the pre-proposal stage. Yet, this part of the policy process has largely eluded quantitative study due to a lack of systematic data. This paper begins to fill this gap. We introduce a new dataset based on thousands of monthly internal project status reports by the U.S. Department of Transportation that allow us to track a rulemaking effort from its origin date through its finalization.  Additionally, we develop a number of novel measures of prioritization and constraints that we are able to measure before and after a draft rule is made public,  including the degree of agency resource constraints, internal agency prioritization, changes in sub-agency political appointees, congressional and presidential attention, and the threat of litigation and sanction by courts.
+
+Using these new data and measures, we model the drivers of prioritization and constraint as a multi-stage policy process and identify different political forces at work in each stage. Specifically, we use a multi-stage hazard model to test factors that may affect the timing of rules being proposed or finalized thus identify predictors of prioritization and delay. Previous research suggests that that greater internal agency resources—in terms of personnel and budgets—will speed up rulemaking during the largely opaque pre-proposal stage, while attention from external actors, including Congress and the president, will speed up rulemaking during the more transparent notice and comment period. Our data and measures allow new tests of these theories. We show that resources, complexity, and salience have different effects on the speed of rule-writing across different stages.
+
+Our findings hold important implications for our understanding of transparency and bureaucratic policymaking within a representative democracy.
+
+# To-do:
+
+Find a method to identify the year of earch rule's authorizing statute
+
+OIRA report dates 
+
+
+```{r data}
+load(here("Data/DOT-monthly.Rdata"))
+```
+```{asis, include = FALSE}
+There are 390 unique RINs for which we have the date at which they were initiated. Of these, 144 were delayed and 183 were not delayed at the time they were last observed. However, part of this is due to the trend for DOT to claim that an increasing number of projects are not on a schedule (the “Black” category). 215 projects were delayed and give a reason for delay at some point.
+286 Were initiated after 2008. Of these 138 have Final Rules Published and 7 have been withdrawn.
+
+Published
+Received by ORIA
+Days Until OST
+Days Until Published
+ANPRMs
+50
+13
+219.9412
+408.16
+NPRMs
+267
+95
+619.6
+1001.914
+SNPRMs
+18
+4
+Final Rules
+228
+138
+1309.528
+1512.996
+Interim Final Rules
+18
+10
+Withdrawals
+17
+1484.118
+```
+
+
+# Data
+
+## Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking:
+```{r timeline, fig.height = 17}
+dotMonthly %<>% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
+
+# Consolidate like stages:
+dotMonthly$STAGE %<>% {gsub("Terminat.*", "Withdrawal",.)}
+dotMonthly$STAGE %<>% {gsub(".2$", "", .)}
+dotMonthly$STAGE %<>% {gsub(".3$", "", .)}
+dotMonthly$STAGE %<>% {gsub(".4$", "", .)}
+dotMonthly$STAGE %<>% {gsub("Notice", "Proposed Rule", .)}
+dotMonthly$STAGE %<>% {gsub("Other", "Undetermined", .)}
+dotMonthly$STAGE %<>% {gsub("Prerule", "Proposed Rule", .)}
+dotMonthly$STAGE %<>% {gsub("Interim Final Rule", "Final Rule", .)}
+dotMonthly$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
+
+# library(lemon)
+
+dotMonthly %>% # filter(reportdate > as.Date("2008-01-01")) %>%
+ggplot(aes(x = RIN)) + 
+  geom_linerange(aes(ymin=initiated, ymax=end, color="DOT Reports"), size=.1) +
+  geom_point(aes(y = DOTdate, color = "DOT Reports", shape = STAGE), size = .5) +
+  geom_point(aes(y = ANPRMpublished, color = "DOT Reports"), shape = 2, size = .5) +
+  geom_point(aes(y = NPRMpublished, color = "DOT Reports"), shape = 2, size = .5) +
+  geom_point(aes(y = SNPRMpublished, color = "DOT Reports"), shape = 2, size = .5) +
+  geom_point(aes(y = FinalRulePublished, color = "DOT Reports"), shape = 1, size = .5) +
+  geom_point(aes(y=IFRpublished, color = "DOT Reports"), shape = 1, size = .5) +
+  geom_point(aes(y=WithdrawalPublished), color="red", shape = 4, size = 1) +
+  geom_point(aes(y=Terminated), color="red4", shape = 4, size = 1) +
+  geom_point(aes(y = DATE_RECEIVED, color = "OIRA Reports", shape = STAGE), size = .5) +
+  geom_point(aes(y = UnifiedAgendaDate, color = "Unified Agenda Reports", shape = STAGE), size = .5) +
+  # facet_rep_wrap(acronym~., scales = "free_y", space = "free_y", , repeat.tick.labels = 'left')+
+  facet_grid(acronym~., scales = "free_y", space = "free_y")+
+  coord_flip() +
+  scale_y_date(lim = c(as.Date("2000-01-01"), as.Date("2019-01-01")),
+             breaks=date_breaks(width = "1 year"), 
+             labels = date_format("%y"),
+             minor_breaks=NULL) + 
+  ggtitle('Significant DOT Rulemaking Projects Active Between 2008 and 2017') + 
+  labs( x = "RIN", y = "Date", color = "")+
+  theme(axis.text.y = element_text(size = 3,
+                       angle = 0,
+                       hjust = 1,
+                       vjust = 1),
+        axis.ticks = element_blank(),
+        strip.text.y = element_text(angle = 0),
+        strip.background = element_blank()) 
+```
+
+Notice how the DOT initiated a large number of projects shortly after Obama's reelection, probably waiting for assureance that they would be able to complete their work.  
+
+
+
+# Core Model
+
+
+
+
+
+
+# Covariates
+
+
+## Congressional attention/opposition: 
+
+2018 appropriations subcommittee report. Below are examples of positive and negative sentiment about the FAA. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.
+
+#### Examples:
+
+POSITIVE: 
+
+The Committee is encouraged 
+by the additional measures the FAA is taking to enhance 
+outreach to communities affected by new flightpaths. The 
+Committee recommendation includes an additional $2,000,000 to 
+support the FAA's ongoing efforts to address community noise 
+concerns.
+The Committee supports 
+research that is being conducted through the FAA's Center of 
+Excellence for Alternative Jet Fuel and Environment, the 
+Aviation Sustainability Center (ASCENT) on the impact of 
+aviation noise on both sleep and cardiovascular health.
+The Committee commends the FAA Office 
+of Commercial Space Transportation's efforts to promote private 
+sector lunar exploration and development and encourages the FAA 
+to explicitly define non-interference and to enhance its 
+payload review process to provide companies planning private 
+sector lunar development with the security and predictability 
+necessary to support substantial investments. 
+
+NEGATIVE:
+
+The Committee is concerned by the FAA's decision to 
+extend by five years its aging Mission Support Network, a 
+decision which carries both technology and cost implications. 
+
