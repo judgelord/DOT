@@ -99,7 +99,12 @@ Withdrawals
 
 # Data
 ```{r timeline, fig.height = 7}
-
+# Consolidate like stages:
+# dotMonthly$STAGE %<>% {gsub("Terminat.*", "Withdrawal",.)}
+# dotMonthly$STAGE %<>% {gsub(".2$", "", .)}
+# dotMonthly$STAGE %<>% {gsub(".3$", "", .)}
+# dotMonthly$STAGE %<>% {gsub(".4$", "", .)}
+# dotMonthly$STAGE %<>% {gsub("Notice", "Proposed Rule", .)}
 
 
 ```
@@ -119,7 +124,7 @@ Withdrawals
 
 2018 appropriations subcommittee report. Below are examples of positive and negative sentiment about the FAA. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.
 
-Examples:
+#### Examples:
 
 POSITIVE: 
 

@@ -1,5 +1,4 @@
 
-
 # This script combines .csv files processed with the DOTrules.R script into two data frames, one of all observations and one of just the most recent observation for each RIN. It also cleans, formats, and organizes these data.
 # It then merges them with data from OIRA via reginfo.gov
 
@@ -8,7 +7,7 @@
 source("setup.R")
 Sys.setlocale('LC_ALL','C') 
 
-## Load all ORIA + UA
+## Load all ORIA + UA object named "regs"
 load( url("https://github.com/judgelord/reginfo.gov/raw/master/data/OIRAandUA.Rdata") )
 ## or
 # regs <- read.csv("Data/OIRA and UA.csv")
@@ -18,7 +17,9 @@ load( url("https://github.com/judgelord/reginfo.gov/raw/master/data/OIRAandUA.Rd
 # Read in first report "reports/DOTclean/200801DOTclean.csv"
 dot <- read.csv("reports/DOTclean/200801DOTclean.csv")
 
+
 # Read in the rest
+dot <- dot[0,] # start with empty data frame
 for( i in list.files(path = "reports/DOTclean/") ){
   print(c(i, dim(read.csv(here("reports/DOTclean/", i)))))
   dot <- rbind(dot, read.csv(here("reports/DOTclean/", i)))
@@ -37,7 +38,7 @@ for( i in list.files(path = "reports/DOTclean/") ){
 #read.csv("201609DOTclean.csv", stringsAsFactors = F),
 #read.csv("201610DOTclean.csv", stringsAsFactors = F),
 #read.csv("201611DOTclean.csv", stringsAsFactors = F),
-
+# + 2018 other than Sept
 
 # order by date decending
 # dot <- dot[order(-dot$date),]
@@ -373,19 +374,15 @@ for(i in 1:dim(dot)[1]){
   }}
 
 
-
-
+# Select things that vary by month
+dotMonthly <- select(dot, RIN, STAGE, date, color, 
+                     whydelay, whydelay1, whydelay2, whydelay3, whydelay4, whydelay5, whydelay6, whydelay7, whydelay8,
+                     effects)
 
 # select the most recent observation for each RIN at each Stage
 dot <- dplyr::group_by(dot, RIN, STAGE)
 dotlast <- dplyr::top_n(dot, 1, DOTdate)
 dot <- dplyr::ungroup(dot)
-# dotlast <- dplyr::arrange(dotlast, desc(DOTdate))
-# dotlast <- dplyr::arrange(dotlast, desc(RIN))
-DOTall <- dot
-
-
-
 
 
 
@@ -428,7 +425,7 @@ DOTall <- dot
 # merge data
 dot <- full_join(dotlast,
                  # subset OIRA and Unified Agenda  to only DOT RINs
-                 d %>% filter( grepl("^21", RIN) ) ) 
+                 regs %>% filter( grepl("^21", RIN) ) ) 
 
 dot <- unique.data.frame(dot)
 
@@ -441,7 +438,7 @@ for(i in 1:dim(dot)[1]){
 
 
 
-# copy 
+# copy info to across obs of the same initialization date # CHECK THIS, perhaps use group_by() # FIXME
 dot %<>% arrange((reportdate)) %>%
   transform(initiated = ave(initiated, RIN, FUN = CopyIfNA)) %>%
   transform(agency = ave(agency, RIN, FUN = CopyIfNA)) %>%
@@ -457,7 +454,7 @@ dot %<>% arrange(desc(reportdate)) %>%
   transform(abstract = ave(abstract, RIN, FUN = CopyIfNA)) %>%
   transform(fulltitle = ave(fulltitle, RIN, FUN = CopyIfNA))
 
-# Replace missing titles and agency names with UA data (for now, until I figure out mutate ifelse with dates)
+# Replace missing titles and agency names with UA data (for now, until replacing with mutate(if_else) which works with dates)
 # To OST Scheduled 
 dot$ANPRMtoOSTscheduled = NA
 dot$NPRMtoOSTscheduled = NA
@@ -728,17 +725,55 @@ dot %<>% arrange(desc(reportdate)) %>%
 
 
 
-# EXTRA VARS (vars that are direct functions of others, not conditional on stage)
+################################################################################
+# Format Dates 
+dot %<>% mutate(ANPRM_PUBLISHED = ifelse(ANPRM_PUBLISHED == "", NA, ANPRM_PUBLISHED))
+dot %<>% mutate(NPRM_PUBLISHED = ifelse(NPRM_PUBLISHED == "", NA, NPRM_PUBLISHED))
+dot %<>% mutate(FINAL_PUBLISHED = ifelse(FINAL_PUBLISHED == "", NA, FINAL_PUBLISHED))
+dot %<>% mutate(DATE_PUBLISHED = ifelse(DATE_PUBLISHED == "", NA, DATE_PUBLISHED))
+#FIXME
+# dot %<>% mutate(enddate = ifelse(enddate == "", NA, enddate))
+
+# published 
+dot %<>% mutate(ANPRMpublished = ifelse(ANPRMpublished == "", NA, ANPRMpublished))
+dot %<>% mutate(ANPRMpublished = as.Date(ANPRMpublished))
+dot %<>% mutate(NPRMpublished = as.Date(NPRMpublished))
+dot %<>% mutate(SNPRMpublished = as.Date(SNPRMpublished))
+dot %<>% mutate(IFRpublished = as.Date(IFRpublished))
+dot %<>% mutate(FinalRulePublished = ifelse(FinalRulePublished == "", NA, FinalRulePublished))
+dot %<>% mutate(FinalRulePublished = as.Date(FinalRulePublished)) # why so many "" ? 
+# clear OMB
+dot %<>% mutate(ANPRMclearOMB = as.Date(ANPRMclearOMB))
+dot %<>% mutate(NPRMclearOMB = as.Date(NPRMclearOMB))
+dot %<>% mutate(SNPRMclearOMB = as.Date(SNPRMclearOMB))
+dot %<>% mutate(IFRclearOMB = as.Date(IFRclearOMB))
+dot %<>% mutate(FinalRuleclearOMB = as.Date(FinalRuleclearOMB))
+dot %<>% mutate(Terminated = as.Date(Terminated))
+
+dot %<>% mutate(enddate = ifelse(enddate == "", NA, enddate))
+dot %<>% mutate(enddate = as.Date(enddate))
 
 
-#names(dot)
-
-  dot[,150] <- as.Date(dot[,x])
-
-
-for(x in c(157:198)){
+# # more dates 
+for(x in c(76:86, 151, 166:180, 182:212)){
   dot[,x] <- as.Date(dot[,x])
 }
+x
+names(dot)[x]
+sort(dot[, x])
+
+
+
+
+
+
+
+
+#################################################################################
+# EXTRA VARS (vars that are direct functions of others, not conditional on stage)
+# maybe move this to use add needed? 
+
+
   
 
 #names(dot)
@@ -756,14 +791,14 @@ dot$DaysUntilOSTNPRM <- round(difftime(dot$NPRMtoOST, dot$initiated, units="days
 dot$DaysUntilOSTSNPRM <- round(difftime(dot$SNPRMtoOST, dot$initiated, units="days"))
 dot$DaysUntilOSTIFR <- round(difftime(dot$IFRtoOST, dot$initiated, units="days"))
 dot$DaysUntilOSTFinalRule <- round(difftime(dot$FinalRuletoOST, dot$initiated, units="days"))
-dot$DaysUntilOSTWithdrawal <- round(difftime(dot$WithdrawaltoOST, dot$initiated, units="days"))
+dot$DaysUntilOSTWithdrawal <- round(difftime(dot$withdrawnOSTactual, dot$initiated, units="days"))
 # Until OMB
 dot$DaysUntilOMBANPRM <- round(difftime(dot$ANPRMtoOMB, dot$initiated, units="days"))
 dot$DaysUntilOMBNPRM <- round(difftime(dot$NPRMtoOMB, dot$initiated, units="days"))
 dot$DaysUntilOMBSNPRM <- round(difftime(dot$SNPRMtoOMB, dot$initiated, units="days"))
 dot$DaysUntilOMBIFR <- round(difftime(dot$IFRtoOMB, dot$initiated, units="days"))
 dot$DaysUntilOMBFinalRule <- round(difftime(dot$FinalRuletoOMB, dot$initiated, units="days"))
-dot$DaysUntilOMBWithdrawal <- round(difftime(dot$WithdrawaltoOMB, dot$initiated, units="days"))
+dot$DaysUntilOMBWithdrawal <- round(difftime(dot$withdrawnOMBactual, dot$initiated, units="days"))
 # at OMB
 dot$DaysANPRMatOMB <- round(difftime(dot$ANPRMclearOMB, dot$ANPRMtoOMB, units="days"))
 dot$DaysNPRMatOMB <- round(difftime(dot$NPRMclearOMB, dot$NPRMtoOMB, units="days"))
@@ -784,12 +819,12 @@ dot$NPRMtoRule <- round(difftime(dot$FinalRulePublished, dot$NPRMpublished, unit
 
 
 dot %<>% 
-  mutate(alpha = strtrim(dot$RIN, 4))
+  mutate(acronym = strtrim(dot$RIN, 4))
   
 #?stringtrim
 
-unique(dot$alpha)
-dot$alpha %<>% 
+unique(dot$acronym)
+dot$acronym %<>% 
   gsub("2137","PHMSA", .) %>%
   gsub("2127","NHTSA", .) %>%
   gsub("2105","OTS", .) %>%
@@ -809,12 +844,12 @@ dot %<>% dplyr::select(initiated, toOMBactual, resubmitOMB2actual, DATE_RECEIVED
 dot %<>%
   ungroup() %>%
   mutate(HasANPRM = ifelse(is.na(dot$ANPRMpublished),0, 1))
-dot$HasANPRM
+# dot$HasANPRM
 
 # dot %<>% dplyr::select(RIN, agency, fulltitle, initiated, WithdrawalPublished, FinalRulePublished, DaysUntilANPRM, DaysANPRMatOMB, DaysUntilNPRM, DaysNPRMatOMB, DaysUntilSNPRM, DaysUntilIFR, DaysIFRatOMB, DaysUntilFinalRule, DaysFRatOMB, DOTdate, UnifiedAgendaDate, STAGE, PrevStage, TIMETABLE_LIST, toOMBactual, DATE_RECEIVED, ANPRMpublished, ANPRM, NPRMpublished, NPRM, SNPRM, IFRpublished, IFR, FinalRulePublished, FINAL,  fedreg, ANPRMfedreg, NPRMfedreg, SNPRMfedreg, IFRfedreg, FINALfedreg, docket,  whydelay, color, everything())
 
 
-dot %<>% dplyr::select(RIN, docket, agency, alpha, fulltitle, initiated, enddate, reportdate, STAGE, PrevStage, TIMETABLE_LIST, #TotalDays,
+dot %<>% dplyr::select(RIN, docket, agency, acronym, fulltitle, initiated, enddate, reportdate, STAGE, PrevStage, TIMETABLE_LIST, #TotalDays,
                        DaysUntilANPRM, DaysUntilOSTANPRM, DaysUntilOMBANPRM, DaysANPRMatOMB,
                        DaysUntilNPRM, DaysUntilOSTNPRM, DaysUntilOMBNPRM, DaysNPRMatOMB,
                        DaysUntilIFR, DaysUntilOSTIFR, DaysUntilOMBIFR, DaysIFRatOMB,
@@ -829,27 +864,24 @@ dot %<>% dplyr::select(RIN, docket, agency, alpha, fulltitle, initiated, enddate
 
 
 
-dot$ANPRMpublished<-as.Date(dot$ANPRMpublished)
-dot$SNPRMpublished<-as.Date(dot$SNPRMpublished)
-dot$NPRMpublished<-as.Date(dot$NPRMpublished)
-dot$IFRpublished<-as.Date(dot$IFRpublished)
-dot$FinalRulePublished<-as.Date(dot$FinalRulePublished)
-
-dot$NPRMclearOMB %<>% as.Date()
-dot$SNPRMclearOMB %<>% as.Date()
-dot$IFRclearOMB %<>% as.Date()
-dot$FinalRuleclearOMB %<>% as.Date()
-dot$Terminated %<>% as.Date()
 
 
 
 
 
+
+
+
+
+
+
+
+
+
+#################### MAKE SUBSETS ###############################
 dot %<>%
   dplyr::group_by(RIN) %>%
   dplyr::arrange(desc(enddate))
-
-#################### MAKE SUBSETS ###############################
 
 # One OBS per RIN 
 dotRIN <- dot %>%
@@ -859,21 +891,13 @@ dotRIN <- dot %>%
   dplyr::arrange(desc(reportdate))
 
 # Merge with full DOT monthly dataset
-DOTmonthly <- merge(DOTall, dot, by=c("RIN","STAGE"), all=TRUE)
+# IS THIS ALL OF THE MONTHLY VARIANCE (DATES DON'T CHANGE, RIGHT?)
+dotMonthly %<>%  left_join(dot)
+dotMonthly <- dplyr::arrange(dotMonthly, desc(RIN))
 
-DOTmonthly <- dplyr::select(DOTmonthly, -ends_with(".y"))
+dotMonthly$STAGE <- gsub("Terminat.*", "Termination", dotMonthly$STAGE)
 
-names(DOTmonthly) <- gsub(".x", "", names(DOTmonthly))
-
-DOTmonthly <- dplyr::arrange(DOTmonthly, desc(RIN))
-
-#
-# DOTmonthly$stage <- gsub("Terminat.*", "Withdrawal",DOTmonthly$STAGE)
-# DOTmonthly$stage %<>% {gsub(".2", "", .)}
-# DOTmonthly$stage %<>% {gsub(".3", "", .)}
-# DOTmonthly$stage %<>% {gsub(".4", "", .)}
-# DOTmonthly$stage %<>% {gsub("Notice", "Proposed Rule", .)}
-unique(DOTmonthly$stage)
+unique(dotMonthly$STAGE)
 
 
 
@@ -883,16 +907,21 @@ unique(DOTmonthly$stage)
 ###########################################################
 
 # write out entire DOT data as master
-write.csv(DOTmonthly, file = "data/DOT Monthly.csv")
+write.csv(dotMonthly, file = "data/DOT-monthly.csv")
+save(dotMonthly, file = "data/DOT-monthly.Rdata")
 
-# write out only last observations per stage as "rules"
-write.csv(dot, file = "data/DOT Rule Stages.csv")
+# write out only last observations per stage 
+write.csv(dot, file = "data/DOT-perRule-perStage.csv")
+save(dot, file = "data/DOT-perRule-perStage")
 
-# write out combined
-write.csv(dotRIN, file = "data/DOT Rules.csv")
+# write out one per RIN 
+write.csv(dotRIN, file = "data/DOT-perRule.csv")
+save(dotRIN, file = "data/DOT-perRule")
 
 # list of variables
 write.csv(names(dot), file = "DOT variables.csv")
 
 # save Rdata
-save.image("DOT.Rdata")
+# save.image("data/DOT.Rdata")
+
+
