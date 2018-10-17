@@ -16,12 +16,13 @@
 ##############      | load monthly report and name date: |
 ##############       ==================================== 
 
-date <- 201809 # <---- REPORT DATE YYYYMMM--------------------------
+date <- 201807 # <---- REPORT DATE YYYYMMM--------------------------
 
 ###################################################################################
 # load packages and functions
 if(!exists("CopyIfNA")){source("setup.R")} 
 
+rules <- NA # just to make sure we are getting new data
 original <- rules <- read.csv(here("reports", "rawDOT", paste0("raw", substr(date,1,4), "dot"), paste0("raw", date, "dot.csv")), header=F)
         
 
@@ -35,12 +36,15 @@ rules$V1 <- gsub(" $", "", rules$V1)
 anchor <-"To OST"  # some value that always occurs in the first column of each observation (used in Part 2)
 
 #delete table of contents
-i <- 1
-while(rules[i,"V1"] != rules[(i+3),"V1"] |
-      rules[i,"V1"] ==""){
-  i<- i + 1
+for(i in 1:dim(rules)[1] ) {
+  if(
+    grepl("^[1-9][0-9]", rules$V1[i]) & 
+    (grepl("^[1-9][0-9]", rules$V1[i + 1]) | grepl("^[1-9][0-9]", rules$V1[i + 2]))&
+    rules$V1[i+3] == "" & 
+    rules$V1[i+4] == "" ) {
+      rules <- rules[(i + 5):dim(rules)[1], ]
+    }
 }
-rules<-rules[(i+3):length(rules$V1),]
 
 # remove blank rows
 rules %<>% filter(!(V1 == "" & V2 == "" & V3 == "" & V4 == ""))
@@ -48,6 +52,12 @@ rules %<>% filter(!(V1 == "" & V2 == "" & V3 == "" & V4 == ""))
 # add blank rows at end to allow looking ahead
 for(i in 1:10){
 rules <- rbind(rules, c("","","","")) 
+}
+
+for(i in 1:dim(rules)[1]) {
+  if( grepl("^Federal|^National", rules$V1[i]) & rules$V1[i] == rules$V1[i+1]) {
+    rules <- rules[-i,]
+  }
 }
 
 # the remainder of Part 1 merges, adds, deletes, and re-orders rows - ### THIS CODE MAY NEED TO BE RUN TWICE ###
@@ -398,6 +408,7 @@ while(x<5){
 }
 
 #####################################################
+
 new<-c("To OMB","","","")
 i <- 1
 while(i<length(rules$V1)){
@@ -809,15 +820,15 @@ rules$linenumber<-linenumber
 
 i <- 1
 while(!(rules[i, "linenumber"] == firstanchor &
-     rules[(i), "V1"]!=anchor)){
+     rules[(i), "V1"]!= anchor)){
     i<-i+1
   }
 problem=i
 Problem<- problem!=(length(rules$V1)+1)
 Problem
 problemArea <- rules[(problem - n*3):(problem + 3),]
-NAifdone=rules[i,"V1"]
-NAifdone
+done <- is.na(rules[i,"V1"])
+done#?
 #####################################################################
 
 ######################## RUN ABOVE ##################################
@@ -851,7 +862,7 @@ while(correct[i] == error[i]
 correct[(i-1):(i+1)]
 #error
 error[(i-1):(i+1)]
-NAifdone
+done#?
 
 #################################################################################
 
@@ -1068,10 +1079,9 @@ while(i<length(rules$V1)){
 #############################################################
 ################# EXPORT CLEAN DATA ########################
 ############################################################
-#write.csv(rules, file="Feb2013DOTcleaner.csv")
 if(Problem==F){
   write.csv(out, 
-            file = paste0("reports/DOTclean/clean", date, "dot.csv") 
+            file = paste0("reports/DOTclean/", date, "DOTclean.csv") 
             )}
 
 if(Problem==T){
@@ -1079,10 +1089,11 @@ if(Problem==T){
   print(rules$V1[(problem-2):(problem+2)])
   }
 n
-Problem
-NAifdone
-FileNameCorrect
+Problem#?
+done#?
+# distribution of delay status 
 summary(as.factor(out$color))
+# another check for failures 
 which(out$color=="")
 
 #which(original$V1==out$title[which(out$color=="")])

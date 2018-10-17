@@ -4,8 +4,7 @@ output:
    html_document:
     toc: true
     code_folding: hide
- params: 
-  output_dir: "../gh-pages"
+
 ---
 ---
 
@@ -125,14 +124,18 @@ ggplot(aes(x = RIN)) +
              labels = date_format("%y"),
              minor_breaks=NULL) + 
   ggtitle('Significant DOT Rulemaking Projects Active Between 2008 and 2017') + 
-  labs( x = "RIN", y = "Date", color = "")+
+  labs( x = "RIN", y = "Date", color = "", shape = "")+
+  #scale_x_discrete(sec.axis = dup_axis()) + 
+  #scale_y_date(sec.axis = dup_axis())+
   theme(axis.text.y = element_text(size = 3,
                        angle = 0,
                        hjust = 1,
                        vjust = 1),
         axis.ticks = element_blank(),
         strip.text.y = element_text(angle = 0),
-        strip.background = element_blank()) 
+        strip.background = element_blank(),
+        legend.position = "top",
+        axis.text.x.top = TRUE) 
 ```
 
 Notice how the DOT initiated a large number of projects shortly after Obama's reelection, probably waiting for assureance that they would be able to complete their work.  
@@ -141,13 +144,12 @@ Notice how the DOT initiated a large number of projects shortly after Obama's re
 
 # Core Model
 
-
+add core model
 
 
 
 
 # Covariates
-
 
 ## Congressional attention/opposition: 
 
