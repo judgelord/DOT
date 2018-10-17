@@ -1,4 +1,4 @@
-   
+rm(list=ls()) #(clean workspace) 
 #################################################################################
 # This code takes in .csv files with text coppied from DOT word documents, pasted into excel and saved as .csv
 
@@ -16,7 +16,7 @@
 ##############      | load monthly report and name date: |
 ##############       ==================================== 
 
-date <- 201807 # <---- REPORT DATE YYYYMMM--------------------------
+date <- 201709 # <---- REPORT DATE YYYYMMM--------------------------
 
 ###################################################################################
 # load packages and functions
@@ -1082,21 +1082,20 @@ while(i<length(rules$V1)){
 if(Problem==F){
   write.csv(out, 
             file = paste0("reports/DOTclean/", date, "DOTclean.csv") 
-            )}
+  )
+  # distribution of delay status 
+  summary(as.factor(out$color))
+  # another check for failures 
+  which(out$color=="")
+  }
 
 if(Problem==T){
-  print(rules$V1[(problem-n-10):(problem+10)])
+  print(error)
   print(rules$V1[(problem-2):(problem+2)])
   }
-n
+
 Problem#?
 done#?
-# distribution of delay status 
-summary(as.factor(out$color))
-# another check for failures 
-which(out$color=="")
-
-#which(original$V1==out$title[which(out$color=="")])
-#original[(i-5):(i+5),"V1"]
 ######################### END ###############################
 
+rm(anchor, blank, correct, firstanchor, i, j, linenumber, new, problem, requires, secondanchor, to_install, x)

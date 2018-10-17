@@ -86,7 +86,7 @@ Withdrawals
 
 # Data
 
-## Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking:
+## Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:
 ```{r timeline, fig.height = 17}
 dotMonthly %<>% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
 
