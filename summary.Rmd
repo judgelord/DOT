@@ -228,3 +228,48 @@ DOT - Unified Agenda rule stage crosswalk:
 [18] "Final Rule with Request for Comments" = Final Rule
 [19] "Termination"  = Termination (or Withdrawal in summary figures)
 
+
+
+
+
+
+Covariates: 
+
+##### Resources 
+Resources measures:
+-"lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
+-number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
+-secretary prompt - how many missing? 
+
+##### Complexity  
+Complexity measurements:
+-"coordination necessary" claimed [0,1], subset of delayed rules
+-score of abstract on Benoit's political sophistication/complexity
+-second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
+-number of comments? (to me this is more about salience and contentiousness than complexity)
+
+##### Contentiousness: 
+ White House and Secretary alignment measures:
+-"other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal)
+-initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
+-went to Secretary twice [0,1]
+-days between going to secretary going to ORIA (average if multiple times)
+-went to ORIA twice [0,1]
+-Did ORIA make changes [0,1]
+- days between going to ORIA and final rule (count from the first or last time at ORIA? )
+Congress alignment measures:
+-positive-negative sentiment words in subcommittee budget report
+-positive-negative sentiment words in subcommittee hearing
+-legislative deadline exists [0,1]
+-legislative deadline past [0,1]
+-prompting action is legislation [0,1] (speeds up rulemaking?)
+-legislation is pending [0,1] (slows rulemaking)
+-Reg flex required [0,1] slowing? 
+-unified congress 
+
+Litigation threat:
+court deadline exists [0,1]
+court deadline past [0,1]
+# lawsuits against the subagency in the past x years
+avg # of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
+litigation threatened in comments? [0,1]

@@ -925,11 +925,11 @@ save(dotMonthly, file = "data/DOT-monthly.Rdata")
 
 # write out only last observations per stage 
 write.csv(dotStage, file = "data/DOT-perRule-perStage.csv")
-save(dotStage, file = "data/DOT-perRule-perStage")
+save(dotStage, file = "data/DOT-perRule-perStage.Rdata")
 
 # write out one per RIN 
 write.csv(dotRIN, file = "data/DOT-perRule.csv")
-save(dotRIN, file = "data/DOT-perRule")
+save(dotRIN, file = "data/DOT-perRule.Rdata")
 
 # list of variables
 write.csv(names(dot), file = "DOT variables.csv")
