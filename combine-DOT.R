@@ -357,7 +357,7 @@ dot$STAGE[which(dot$STAGE=="Interim Final Rule" & dot$DOTdate=="2016-05-01" & do
 dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2012-03-01" & dot$RIN=="2125-AF40")] <- "Proposed Rule"
 dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2016-05-01" & dot$RIN=="2126-AA64")] <- "Final Rule"
 dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2008-01-01" & dot$RIN=="2130-AB72")] <- "Final Rule"
-dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2015-03-01" & dot$RIN=="2105-AD90")] <- "Terminated"
+dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2015-03-01" & dot$RIN=="2105-AD90")] <- "Termination"
 
 # Is it working? 
 dot$toOMBactual[which(dot$toOMBactual == "2011-02-02" & dot$RIN=="2127-AE13")] <- NA # this date is clearly wrong as OMB reports recieveing it earlier and DOT reports sending it back to OMB before this date

@@ -193,69 +193,77 @@ dotStage %&lt;&gt;% filter(!is.na(initiated)) # select rule-stage observations w
 load(here(&quot;data/DOT-perRule.Rdata&quot;))
 dotRIN %&lt;&gt;% filter(!is.na(initiated)) # select rule observations with a dot report
 
-dotMonthly %&lt;&gt;% group_by(RIN) %&gt;% mutate(delay = paste(na.omit(color), collapse = &quot;,&quot;)) %&gt;%
+dotMonthly %&lt;&gt;% group_by(RIN) %&gt;% 
+  mutate(delay = paste(na.omit(color), collapse = &quot;,&quot;)) %&gt;%
   mutate(delayedever = grepl(&quot;Red&quot;, delay))</code></pre>
 <p><a href="https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing">Google spreadsheet of variables</a></p>
-<p>There are 434 unique RINs for which we have the date at which they were initiated. Of these, 134 were marked ‘delayed’ and 75 were marked ‘on time’ at the time they were last observed. However, DOT increasingly marks projects as ‘not on a schedule’ ( 134 are last observed in the “Black” category). 0 projects were delayed and give a reason for delay at some point. 317 Were initiated after 2008. Of these 267 have Final Rules Published, 30 have been withdrawn, and 5 were terminated.</p>
-<table>
+<p>There are 434 unique RINs for which we have the date at which they were initiated. Of these, 134 were marked ‘delayed’ and 75 were marked ‘on time’ at the time they were last observed. However, DOT increasingly marks projects as ‘not on a schedule’ ( 134 are last observed in the “Black” category). 7009 projects were delayed and give a reason for delay at some point. 317 Were initiated after 2008. Of these 267 have Final Rules Published, 30 have been withdrawn, and 6 were terminated.</p>
+<table style="width:100%;">
+<colgroup>
+<col width="23%"></col>
+<col width="17%"></col>
+<col width="20%"></col>
+<col width="25%"></col>
+<col width="12%"></col>
+</colgroup>
 <thead>
 <tr class="header">
-<th></th>
-<th>Days Until OST</th>
+<th>MONTHS AFTER INITIATED:</th>
+<th>Sent to OST</th>
 <th>Received by ORIA</th>
-<th>Days Until Published</th>
 <th>Published</th>
+<th>TOTAL PUBLISHED</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>ANPRMs</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>6</td>
+<td>14</td>
+<td>16</td>
+<td>62</td>
 </tr>
 <tr class="even">
 <td>NPRMs</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>20</td>
+<td>31</td>
+<td>36</td>
+<td>348</td>
 </tr>
 <tr class="odd">
 <td>SNPRMs</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>91</td>
+<td>87</td>
+<td>74</td>
+<td>17</td>
 </tr>
 <tr class="even">
 <td>Interim Final Rules</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>5</td>
+<td>17</td>
+<td>21</td>
+<td>25</td>
 </tr>
 <tr class="odd">
 <td>Final Rules</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>50</td>
+<td>55</td>
+<td>62</td>
+<td>305</td>
 </tr>
 <tr class="even">
 <td>Withdrawals</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>34</td>
+<td>87</td>
+<td>54</td>
+<td>31</td>
 </tr>
 <tr class="odd">
 <td>Terminations</td>
 <td></td>
 <td></td>
 <td></td>
-<td></td>
+<td>6</td>
 </tr>
 </tbody>
 </table>

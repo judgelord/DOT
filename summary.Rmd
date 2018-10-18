@@ -79,7 +79,8 @@ dotStage %<>% filter(!is.na(initiated)) # select rule-stage observations with a 
 load(here("data/DOT-perRule.Rdata"))
 dotRIN %<>% filter(!is.na(initiated)) # select rule observations with a dot report
 
-dotMonthly %<>% group_by(RIN) %>% mutate(delay = paste(na.omit(color), collapse = ",")) %>%
+dotMonthly %<>% group_by(RIN) %>% 
+  mutate(delay = paste(na.omit(color), collapse = ",")) %>%
   mutate(delayedever = grepl("Red", delay))
 ```
 
@@ -87,21 +88,21 @@ dotMonthly %<>% group_by(RIN) %>% mutate(delay = paste(na.omit(color), collapse 
 
 
 
-There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r sum(dotMonthly$everdelayed, na.rm = T)` projects were delayed and give a reason for delay at some point.
+There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r sum(dotMonthly$delayedever, na.rm = T)` projects were delayed and give a reason for delay at some point.
 `r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` Were initiated after 2008. Of these `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(grepl("Withdrawal", dotRIN$STAGE), na.rm = T)`  have been withdrawn, and `r sum(grepl("Termination", dotRIN$STAGE), na.rm = T)` were terminated.
 
 
 
 
-|                    | Days Until OST| Received by ORIA | Days Until Published | Published |
+| MONTHS AFTER INITIATED:      | Sent to OST| Received by ORIA | Published | TOTAL PUBLISHED |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
-|ANPRMs              | ||||
-|NPRMs               |||||
-|SNPRMs              |||||
-|Interim Final Rules |||||
-|Final Rules         |||||
-|Withdrawals         |||||
-|Terminations        |||||
+|ANPRMs              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Prerule", na.rm =T)`|
+|NPRMs               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)`|
+|SNPRMs              |`r round(mean(dotStage$DaysUntilOSTSNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBSNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilSNPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "SNPRM", na.rm = T)`|
+|Interim Final Rules |`r round(mean(dotStage$DaysUntilOSTIFR, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBIFR, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilIFR, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Interim Final Rule", na.rm =T)`|
+|Final Rules         |`r round(mean(dotStage$DaysUntilOSTFinalRule, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBFinalRule, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilFinalRule, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Final Rule", na.rm =T)`|
+|Withdrawals         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
+|Terminations        |||| `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
 
 
