@@ -4,7 +4,6 @@ output:
    html_document:
     toc: true
     code_folding: hide
-
 ---
 ---
 
@@ -15,8 +14,7 @@ source("setup.R")
 # ABSTRACT NOTES
 # https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
 
-# Variables
-# https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing
+
   
   # 2016 OPM fedscope text files
   # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
@@ -39,54 +37,73 @@ Using these new data and measures, we model the drivers of prioritization and co
 
 Our findings hold important implications for our understanding of transparency and bureaucratic policymaking within a representative democracy.
 
+
+
+
+---
+
 # To-do:
+
+### Data
 
 Find a method to identify the year of earch rule's authorizing statute
 
-OIRA report dates 
+Add OIRA report dates 
+
+OPM staff resources data for years other than 2016 
+
+### Model
+
+Devin will draft core model
+
+### Writeup
 
 
-```{r data}
-load(here("Data/DOT-monthly.Rdata"))
-```
-```{asis, include = FALSE}
-There are 390 unique RINs for which we have the date at which they were initiated. Of these, 144 were delayed and 183 were not delayed at the time they were last observed. However, part of this is due to the trend for DOT to claim that an increasing number of projects are not on a schedule (the “Black” category). 215 projects were delayed and give a reason for delay at some point.
-286 Were initiated after 2008. Of these 138 have Final Rules Published and 7 have been withdrawn.
+---
 
-Published
-Received by ORIA
-Days Until OST
-Days Until Published
-ANPRMs
-50
-13
-219.9412
-408.16
-NPRMs
-267
-95
-619.6
-1001.914
-SNPRMs
-18
-4
-Final Rules
-228
-138
-1309.528
-1512.996
-Interim Final Rules
-18
-10
-Withdrawals
-17
-1484.118
-```
+
+
 
 
 # Data
 
-## Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:
+```{r data}
+load(here("Data/DOT-monthly.Rdata"))
+dotMonthly %<>% filter(!is.na(initiated)) # select rule-month observations with a dot report
+
+load(here("Data/DOT-perRule-perStage"))
+dotStage %<>% filter(!is.na(initiated)) # select rule-stage observations with a dot report
+
+load(here("Data/DOT-perRule"))
+dotRIN %<>% filter(!is.na(initiated)) # select rule observations with a dot report
+
+dotMonthly %<>% group_by(RIN) %>% mutate(delay = paste(na.omit(color), collapse = ",")) %>%
+  mutate(delayedever = grepl("Red", delay))
+```
+
+[Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
+
+
+
+There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r sum(dotMonthly$everdelayed, na.rm = T)` projects were delayed and give a reason for delay at some point.
+`r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` Were initiated after 2008. Of these `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(grepl("Withdrawal", dotRIN$STAGE), na.rm = T)`  have been withdrawn, and `r sum(grepl("Termination", dotRIN$STAGE), na.rm = T)` were terminated.
+
+
+
+---
+ | Days Until OST                    | Received by ORIA | Days Until Published | Published |
+ANPRMs              | ||||
+NPRMs               |||||
+SNPRMs              |||||
+Interim Final Rules |||||
+Final Rules         |||||
+Withdrawals         |||||
+Terminations        |||||
+---
+
+
+
+Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:
 ```{r timeline, fig.height = 17}
 dotMonthly %<>% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
 
@@ -134,8 +151,7 @@ ggplot(aes(x = RIN)) +
         axis.ticks = element_blank(),
         strip.text.y = element_text(angle = 0),
         strip.background = element_blank(),
-        legend.position = "top",
-        axis.text.x.top = TRUE) 
+        legend.position = "top") 
 ```
 
 Notice how the DOT initiated a large number of projects shortly after Obama's reelection, probably waiting for assureance that they would be able to complete their work.  

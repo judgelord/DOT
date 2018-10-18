@@ -330,19 +330,24 @@ dot$whydelay <- gsub("^,|^, |^ ,", "", dot$whydelay)
 
 ###########################################################################################
 # change name of stage to match Unified Agenda
-names(dot) <- gsub("^stage", "STAGE", names(dot))
-dot$STAGE <- gsub(" NPRM", "NPRM", dot$STAGE)
-dot$dotstage <- dot$STAGE
-# dot$STAGE <- dot$dotstage  # to reset if needed
+names(dot) <- gsub("stage", "dotstage", names(dot))
+dot$STAGE <- dot$dotstage # retain original
+
+dot$STAGE <- gsub("^ ", "", dot$STAGE) # delete extra space 
+unique(dot$STAGE)
+
 dot$STAGE <- gsub(".*ANPRM.*", "Prerule", dot$STAGE)
 dot$STAGE <- gsub("NPRM.*", "Proposed Rule", dot$STAGE)
 dot$STAGE <- gsub("SProposed Rule","SNPRM", dot$STAGE)
 dot$STAGE <- gsub("Final Rule .*", "Final Rule", dot$STAGE)
 dot$STAGE <- gsub(".*of Final Rule", "Final Rule", dot$STAGE)
-dot$STAGE <- gsub("Request for Comments", "Other", dot$STAGE)
+dot$STAGE <- gsub("Request for Comments", "Other", dot$STAGE) # FIXME? should this be NPRM? 
 dot$STAGE <- gsub("Disposition of Comments", "Other", dot$STAGE)
 dot$STAGE <- gsub("Supplemental Notice of Intent", "Prerule", dot$STAGE)
-dot$STAGE[which(dot$dotstage=="Interim Final Rule")]<-"Interim Final Rule"
+dot$STAGE[which(dot$dotstage=="Interim Final Rule.*")]<-"Interim Final Rule"
+dot$STAGE <- gsub("Terminat.*", "Termination", dot$STAGE)
+
+
 
 # correct mislabled stages
 dot$STAGE[which(dot$STAGE=="Undetermined" & dot$DOTdate=="2009-02-01" & dot$RIN=="2120-AJ37")] <- "Final Rule"
@@ -881,7 +886,10 @@ dot %<>%
   dplyr::group_by(RIN) %>%
   dplyr::arrange(desc(enddate))
 
-# One OBS per RIN 
+# One observation per rule per stage 
+dotStage <- dot
+
+# One observation per RIN 
 dotRIN <- dot %>%
   dplyr::group_by(RIN) %>%
   dplyr::top_n(n = 1, reportdate) %>%
@@ -897,12 +905,10 @@ dotMonthly <- select(dotALL, RIN, STAGE,
                      effects)
 
 # merge on RIN and STAGE, delete everything that varies monthly:
-dotMonthly %<>%  left_join(dot %>% select(-date, -color, -abstract, -DOTdate, -prompt, 
+dotMonthly %<>%  left_join(dotStage %>% select(-date, -color, -abstract, -DOTdate, -prompt, 
                                   -whydelay, -whydelay1, -whydelay2, -whydelay3, -whydelay4, -whydelay5, -whydelay6, -whydelay7, -whydelay8,
                                   -effects))
 dotMonthly <- dplyr::arrange(dotMonthly, desc(RIN))
-
-dotMonthly$STAGE <- gsub("Terminat.*", "Termination", dotMonthly$STAGE)
 
 unique(dotMonthly$STAGE)
 
@@ -918,8 +924,8 @@ write.csv(dotMonthly, file = "data/DOT-monthly.csv")
 save(dotMonthly, file = "data/DOT-monthly.Rdata")
 
 # write out only last observations per stage 
-write.csv(dot, file = "data/DOT-perRule-perStage.csv")
-save(dot, file = "data/DOT-perRule-perStage")
+write.csv(dotStage, file = "data/DOT-perRule-perStage.csv")
+save(dotStage, file = "data/DOT-perRule-perStage")
 
 # write out one per RIN 
 write.csv(dotRIN, file = "data/DOT-perRule.csv")

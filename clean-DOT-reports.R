@@ -16,7 +16,7 @@ rm(list=ls()) #(clean workspace)
 ##############      | load monthly report and name date: |
 ##############       ==================================== 
 
-date <- 201709 # <---- REPORT DATE YYYYMMM--------------------------
+date <- 201804 # <---- REPORT DATE YYYYMMM--------------------------
 
 ###################################################################################
 # load packages and functions
@@ -35,19 +35,20 @@ rules$V1 <- gsub(" $", "", rules$V1)
 
 anchor <-"To OST"  # some value that always occurs in the first column of each observation (used in Part 2)
 
+# remove blank rows
+rules %<>% filter(!(V1 == "" & V2 == "" & V3 == "" & V4 == ""))
+
 #delete table of contents
-for(i in 1:dim(rules)[1] ) {
+for( i in 1:dim(rules)[1] ) {
   if(
     grepl("^[1-9][0-9]", rules$V1[i]) & 
-    (grepl("^[1-9][0-9]", rules$V1[i + 1]) | grepl("^[1-9][0-9]", rules$V1[i + 2]))&
-    rules$V1[i+3] == "" & 
-    rules$V1[i+4] == "" ) {
-      rules <- rules[(i + 5):dim(rules)[1], ]
+    grepl("^[1-9][0-9]", rules$V1[i + 1]) &
+    rules$V1[i+3] == "Federal Aviation Administration" ) {
+      rules <- rules[(i + 3):dim(rules)[1], ]
     }
 }
 
-# remove blank rows
-rules %<>% filter(!(V1 == "" & V2 == "" & V3 == "" & V4 == ""))
+
 
 # add blank rows at end to allow looking ahead
 for(i in 1:10){
