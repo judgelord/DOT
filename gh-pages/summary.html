@@ -151,7 +151,7 @@ $(document).ready(function () {
 <li><a href="#covariates">Covariates</a><ul>
 <li><a href="#congressional-attentionopposition">Congressional attention/opposition:</a></li>
 </ul></li>
-<li><a href="#errata">Errata</a></li>
+<li><a href="#notes">Notes</a></li>
 </ul>
 </div>
 
@@ -195,22 +195,15 @@ dotRIN %&lt;&gt;% filter(!is.na(initiated)) # select rule observations with a do
 
 dotMonthly %&lt;&gt;% group_by(RIN) %&gt;% 
   mutate(delay = paste(na.omit(color), collapse = &quot;,&quot;)) %&gt;%
-  mutate(delayedever = grepl(&quot;Red&quot;, delay))</code></pre>
+  mutate(delayedever = grepl(&quot;Red&quot;, delay)) </code></pre>
 <p><a href="https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing">Google spreadsheet of variables</a></p>
-<p>There are 434 unique RINs for which we have the date at which they were initiated. Of these, 134 were marked ‘delayed’ and 75 were marked ‘on time’ at the time they were last observed. However, DOT increasingly marks projects as ‘not on a schedule’ ( 134 are last observed in the “Black” category). 7009 projects were delayed and give a reason for delay at some point. 317 Were initiated after 2008. Of these 267 have Final Rules Published, 30 have been withdrawn, and 6 were terminated.</p>
-<table style="width:100%;">
-<colgroup>
-<col width="23%"></col>
-<col width="17%"></col>
-<col width="20%"></col>
-<col width="25%"></col>
-<col width="12%"></col>
-</colgroup>
+<p>There are 434 unique RINs for which we have the date at which they were initiated. Of these, 134 were marked ‘delayed’ and 75 were marked ‘on time’ at the time they were last observed. However, DOT increasingly marks projects as ‘not on a schedule’ ( 134 are last observed in the “Black” category). 428 projects were delayed at some point and 353 of these give a reason for delay. 317 Were initiated after 2008. Of these 267 have Final Rules Published, 30 have been withdrawn, and 6 were terminated.</p>
+<table>
 <thead>
 <tr class="header">
 <th>MONTHS AFTER INITIATED:</th>
-<th>Sent to OST</th>
-<th>Received by ORIA</th>
+<th>to Secretary</th>
+<th>to ORIA</th>
 <th>Published</th>
 <th>TOTAL PUBLISHED</th>
 </tr>
@@ -336,9 +329,10 @@ ggplot(aes(x = RIN)) +
 </div>
 </div>
 </div>
-<div id="errata" class="section level1">
-<h1>Errata</h1>
-<p>DOT - Unified Agenda rule stage crosswalk: [1] “Final Rule” = Final Rule<br />
+<div id="notes" class="section level1">
+<h1>Notes</h1>
+<p>DOT - Unified Agenda rule stage crosswalk:</p>
+<p>[1] “Final Rule” = Final Rule<br />
 [2] “Undetermined” = Undetermined<br />
 [3] “NPRM” = Proposed Rule<br />
 [4] “SNPRM” = Prerule<br />
@@ -356,19 +350,20 @@ ggplot(aes(x = RIN)) +
 [16] “Disposition of Comments” = Other<br />
 [17] “Request for Comments” = Other<br />
 [18] “Final Rule with Request for Comments” = Final Rule [19] “Termination” = Termination (or Withdrawal in summary figures)</p>
+<hr />
 <p>Covariates:</p>
 <div id="resources" class="section level5">
 <h5>Resources</h5>
-<p>Resources measures: -“lack of resources” or “lack of staffing” claimed [0,1], subset of delayed rules -number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that) -secretary prompt - how many missing?</p>
+<p>Resources measures: - “lack of resources” or “lack of staffing” claimed [0,1], subset of delayed rules - number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that) - secretary prompt - how many missing?</p>
 </div>
 <div id="complexity" class="section level5">
 <h5>Complexity</h5>
-<p>Complexity measurements: -“coordination necessary” claimed [0,1], subset of delayed rules -score of abstract on Benoit’s political sophistication/complexity -second comment period [1,0] (though this may also be a measure of external, interest group constraint) -number of comments? (to me this is more about salience and contentiousness than complexity)</p>
+<p>Complexity measurements: - “coordination necessary” claimed [0,1], subset of delayed rules - score of abstract on Benoit’s political sophistication/complexity - second comment period [1,0] (though this may also be a measure of external, interest group constraint) - number of comments? (to me this is more about salience and contentiousness than complexity)</p>
 </div>
 <div id="contentiousness" class="section level5">
 <h5>Contentiousness:</h5>
-<p>White House and Secretary alignment measures: -“other, higher priorities” claimed [0,1] (is it right to interpret this way? Priority could also be internal) -initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) -went to Secretary twice [0,1] -days between going to secretary going to ORIA (average if multiple times) -went to ORIA twice [0,1] -Did ORIA make changes [0,1] - days between going to ORIA and final rule (count from the first or last time at ORIA? ) Congress alignment measures: -positive-negative sentiment words in subcommittee budget report -positive-negative sentiment words in subcommittee hearing -legislative deadline exists [0,1] -legislative deadline past [0,1] -prompting action is legislation [0,1] (speeds up rulemaking?) -legislation is pending [0,1] (slows rulemaking) -Reg flex required [0,1] slowing? -unified congress</p>
-<p>Litigation threat: court deadline exists [0,1] court deadline past [0,1] # lawsuits against the subagency in the past x years avg # of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT) litigation threatened in comments? [0,1]</p>
+<p>White House and Secretary alignment measures: - “other, higher priorities” claimed [0,1] (is it right to interpret this way? Priority could also be internal) - initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) - went to Secretary twice [0,1] - days between going to secretary going to ORIA (average if multiple times) - went to ORIA twice [0,1] - Did ORIA make changes [0,1] - days between going to ORIA and final rule (count from the first or last time at ORIA? ) Congress alignment measures: - positive-negative sentiment words in subcommittee budget report - positive-negative sentiment words in subcommittee hearing - legislative deadline exists [0,1] - legislative deadline past [0,1] - prompting action is legislation [0,1] (speeds up rulemaking?) - legislation is pending [0,1] (slows rulemaking) - Reg flex required [0,1] slowing? - unified congress</p>
+<p>Litigation threat: - court deadline exists [0,1] - court deadline past [0,1] - number of lawsuits against the subagency in the past x years - avg number of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT) - litigation threatened in comments? [0,1]</p>
 </div>
 </div>
 

@@ -81,20 +81,20 @@ dotRIN %<>% filter(!is.na(initiated)) # select rule observations with a dot repo
 
 dotMonthly %<>% group_by(RIN) %>% 
   mutate(delay = paste(na.omit(color), collapse = ",")) %>%
-  mutate(delayedever = grepl("Red", delay))
+  mutate(delayedever = grepl("Red", delay)) 
 ```
 
 [Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
 
 
 
-There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r sum(dotMonthly$delayedever, na.rm = T)` projects were delayed and give a reason for delay at some point.
+There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r dim(distinct(select(dotMonthly, delayedever, RIN)))[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
 `r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` Were initiated after 2008. Of these `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(grepl("Withdrawal", dotRIN$STAGE), na.rm = T)`  have been withdrawn, and `r sum(grepl("Termination", dotRIN$STAGE), na.rm = T)` were terminated.
 
 
 
 
-| MONTHS AFTER INITIATED:      | Sent to OST| Received by ORIA | Published | TOTAL PUBLISHED |
+| MONTHS AFTER INITIATED:      | to Secretary| to ORIA | Published | TOTAL PUBLISHED |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
 |ANPRMs              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Prerule", na.rm =T)`|
 |NPRMs               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)`|
@@ -206,9 +206,10 @@ decision which carries both technology and cost implications.
 
 
 
-# Errata
+# Notes
 
 DOT - Unified Agenda rule stage crosswalk:
+
  [1] "Final Rule"  = Final Rule                         
  [2] "Undetermined" = Undetermined                        
  [3] "NPRM" = Proposed Rule                                
@@ -231,46 +232,46 @@ DOT - Unified Agenda rule stage crosswalk:
 
 
 
-
+---
 
 
 Covariates: 
 
 ##### Resources 
 Resources measures:
--"lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
--number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
--secretary prompt - how many missing? 
+- "lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
+- number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
+- secretary prompt - how many missing? 
 
 ##### Complexity  
 Complexity measurements:
--"coordination necessary" claimed [0,1], subset of delayed rules
--score of abstract on Benoit's political sophistication/complexity
--second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
--number of comments? (to me this is more about salience and contentiousness than complexity)
+- "coordination necessary" claimed [0,1], subset of delayed rules
+- score of abstract on Benoit's political sophistication/complexity
+- second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
+- number of comments? (to me this is more about salience and contentiousness than complexity)
 
 ##### Contentiousness: 
  White House and Secretary alignment measures:
--"other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal)
--initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
--went to Secretary twice [0,1]
--days between going to secretary going to ORIA (average if multiple times)
--went to ORIA twice [0,1]
--Did ORIA make changes [0,1]
+- "other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal)
+- initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
+- went to Secretary twice [0,1]
+- days between going to secretary going to ORIA (average if multiple times)
+- went to ORIA twice [0,1]
+- Did ORIA make changes [0,1]
 - days between going to ORIA and final rule (count from the first or last time at ORIA? )
 Congress alignment measures:
--positive-negative sentiment words in subcommittee budget report
--positive-negative sentiment words in subcommittee hearing
--legislative deadline exists [0,1]
--legislative deadline past [0,1]
--prompting action is legislation [0,1] (speeds up rulemaking?)
--legislation is pending [0,1] (slows rulemaking)
--Reg flex required [0,1] slowing? 
--unified congress 
+- positive-negative sentiment words in subcommittee budget report
+- positive-negative sentiment words in subcommittee hearing
+- legislative deadline exists [0,1]
+- legislative deadline past [0,1]
+- prompting action is legislation [0,1] (speeds up rulemaking?)
+- legislation is pending [0,1] (slows rulemaking)
+- Reg flex required [0,1] slowing? 
+- unified congress 
 
 Litigation threat:
-court deadline exists [0,1]
-court deadline past [0,1]
-# lawsuits against the subagency in the past x years
-avg # of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
-litigation threatened in comments? [0,1]
+- court deadline exists [0,1]
+- court deadline past [0,1]
+- number of lawsuits against the subagency in the past x years
+- avg number of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
+- litigation threatened in comments? [0,1]
