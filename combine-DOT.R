@@ -321,7 +321,7 @@ dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
-dot$whydelay <- gsub("^,|^, |^ ,", "", dot$whydelay)
+dot$whydelay <- gsub("^,|^, |^ ,|, $", "", dot$whydelay)
 
 
 
@@ -902,13 +902,18 @@ dotRIN <- dot %>%
 dotMonthly <- select(dotALL, RIN, STAGE, 
                      date, color, abstract, DOTdate, prompt, 
                      whydelay, whydelay1, whydelay2, whydelay3, whydelay4, whydelay5, whydelay6, whydelay7, whydelay8,
-                     effects)
+                     effects) 
 
 # merge on RIN and STAGE, delete everything that varies monthly:
 dotMonthly %<>%  left_join(dotStage %>% select(-date, -color, -abstract, -DOTdate, -prompt, 
                                   -whydelay, -whydelay1, -whydelay2, -whydelay3, -whydelay4, -whydelay5, -whydelay6, -whydelay7, -whydelay8,
-                                  -effects))
-dotMonthly <- dplyr::arrange(dotMonthly, desc(RIN))
+                                  -effects)) %>%
+  dplyr::arrange(desc(RIN))
+
+# add overall delay vars
+dotMonthly  %<>% group_by(RIN) %>% 
+  mutate(delay = paste(na.omit(color), collapse = ",")) %>%
+  mutate(delayedever = grepl("Red|Yellow", delay))
 
 unique(dotMonthly$STAGE)
 
