@@ -151,6 +151,7 @@ $(document).ready(function () {
 <li><a href="#covariates">Covariates</a><ul>
 <li><a href="#congressional-attentionopposition">Congressional attention/opposition:</a></li>
 </ul></li>
+<li><a href="#errata">Errata</a></li>
 </ul>
 </div>
 
@@ -169,6 +170,7 @@ $(document).ready(function () {
 <h3>Data</h3>
 <p>Find a method to identify the year of earch rule’s authorizing statute</p>
 <p>Add OIRA report dates</p>
+<p>Infer missing withdrawal dates from date last observed in stage withdrawal</p>
 <p>OPM staff resources data for years other than 2016</p>
 </div>
 <div id="model" class="section level3">
@@ -182,19 +184,81 @@ $(document).ready(function () {
 </div>
 <div id="data-1" class="section level1">
 <h1>Data</h1>
-<pre class="r"><code>load(here(&quot;Data/DOT-monthly.Rdata&quot;))
+<pre class="r"><code>load(here(&quot;data/DOT-monthly.Rdata&quot;))
 dotMonthly %&lt;&gt;% filter(!is.na(initiated)) # select rule-month observations with a dot report
 
-load(here(&quot;Data/DOT-perRule-perStage&quot;))
+load(here(&quot;data/DOT-perRule-perStage.Rdata&quot;))
 dotStage %&lt;&gt;% filter(!is.na(initiated)) # select rule-stage observations with a dot report
 
-load(here(&quot;Data/DOT-perRule&quot;))
+load(here(&quot;data/DOT-perRule.Rdata&quot;))
 dotRIN %&lt;&gt;% filter(!is.na(initiated)) # select rule observations with a dot report
 
 dotMonthly %&lt;&gt;% group_by(RIN) %&gt;% mutate(delay = paste(na.omit(color), collapse = &quot;,&quot;)) %&gt;%
   mutate(delayedever = grepl(&quot;Red&quot;, delay))</code></pre>
 <p><a href="https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing">Google spreadsheet of variables</a></p>
 <p>There are 434 unique RINs for which we have the date at which they were initiated. Of these, 134 were marked ‘delayed’ and 75 were marked ‘on time’ at the time they were last observed. However, DOT increasingly marks projects as ‘not on a schedule’ ( 134 are last observed in the “Black” category). 0 projects were delayed and give a reason for delay at some point. 317 Were initiated after 2008. Of these 267 have Final Rules Published, 30 have been withdrawn, and 5 were terminated.</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>Days Until OST</th>
+<th>Received by ORIA</th>
+<th>Days Until Published</th>
+<th>Published</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>ANPRMs</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>NPRMs</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>SNPRMs</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Interim Final Rules</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Final Rules</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Withdrawals</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Terminations</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <p>Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:</p>
 <pre class="r"><code>dotMonthly %&lt;&gt;% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
 
@@ -262,6 +326,41 @@ ggplot(aes(x = RIN)) +
 <p>NEGATIVE:</p>
 <p>The Committee is concerned by the FAA’s decision to extend by five years its aging Mission Support Network, a decision which carries both technology and cost implications.</p>
 </div>
+</div>
+</div>
+<div id="errata" class="section level1">
+<h1>Errata</h1>
+<p>DOT - Unified Agenda rule stage crosswalk: [1] “Final Rule” = Final Rule<br />
+[2] “Undetermined” = Undetermined<br />
+[3] “NPRM” = Proposed Rule<br />
+[4] “SNPRM” = Prerule<br />
+[5] “Interim Final Rule/4” = Interim Final Rule<br />
+[6] “Interim Final Rule” = Interim Final Rule<br />
+[7] “Withdrawal” = Withdrawal<br />
+[8] “Other” = Undetermined<br />
+[9] “ANPRM” = Prerule<br />
+[10] “Final Rule/2” = Final Rule/2<br />
+[11] “NPRM/2”= Proposed Rule<br />
+[12] “SNPRM/2”= SNPRM<br />
+[13] “Notice” = Notice<br />
+[14] “Supplemental Notice of Intent” = Prerule<br />
+[15] “Reconsideration of Final Rule” = Final Rule<br />
+[16] “Disposition of Comments” = Other<br />
+[17] “Request for Comments” = Other<br />
+[18] “Final Rule with Request for Comments” = Final Rule [19] “Termination” = Termination (or Withdrawal in summary figures)</p>
+<p>Covariates:</p>
+<div id="resources" class="section level5">
+<h5>Resources</h5>
+<p>Resources measures: -“lack of resources” or “lack of staffing” claimed [0,1], subset of delayed rules -number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that) -secretary prompt - how many missing?</p>
+</div>
+<div id="complexity" class="section level5">
+<h5>Complexity</h5>
+<p>Complexity measurements: -“coordination necessary” claimed [0,1], subset of delayed rules -score of abstract on Benoit’s political sophistication/complexity -second comment period [1,0] (though this may also be a measure of external, interest group constraint) -number of comments? (to me this is more about salience and contentiousness than complexity)</p>
+</div>
+<div id="contentiousness" class="section level5">
+<h5>Contentiousness:</h5>
+<p>White House and Secretary alignment measures: -“other, higher priorities” claimed [0,1] (is it right to interpret this way? Priority could also be internal) -initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) -went to Secretary twice [0,1] -days between going to secretary going to ORIA (average if multiple times) -went to ORIA twice [0,1] -Did ORIA make changes [0,1] - days between going to ORIA and final rule (count from the first or last time at ORIA? ) Congress alignment measures: -positive-negative sentiment words in subcommittee budget report -positive-negative sentiment words in subcommittee hearing -legislative deadline exists [0,1] -legislative deadline past [0,1] -prompting action is legislation [0,1] (speeds up rulemaking?) -legislation is pending [0,1] (slows rulemaking) -Reg flex required [0,1] slowing? -unified congress</p>
+<p>Litigation threat: court deadline exists [0,1] court deadline past [0,1] # lawsuits against the subagency in the past x years avg # of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT) litigation threatened in comments? [0,1]</p>
 </div>
 </div>
 

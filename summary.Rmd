@@ -70,13 +70,13 @@ Devin will draft core model
 # Data
 
 ```{r data}
-load(here("Data/DOT-monthly.Rdata"))
+load(here("data/DOT-monthly.Rdata"))
 dotMonthly %<>% filter(!is.na(initiated)) # select rule-month observations with a dot report
 
-load(here("Data/DOT-perRule-perStage"))
+load(here("data/DOT-perRule-perStage.Rdata"))
 dotStage %<>% filter(!is.na(initiated)) # select rule-stage observations with a dot report
 
-load(here("Data/DOT-perRule"))
+load(here("data/DOT-perRule.Rdata"))
 dotRIN %<>% filter(!is.na(initiated)) # select rule observations with a dot report
 
 dotMonthly %<>% group_by(RIN) %>% mutate(delay = paste(na.omit(color), collapse = ",")) %>%
@@ -93,15 +93,15 @@ There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which the
 
 
 
- | Days Until OST                    | Received by ORIA | Days Until Published | Published |
- | --------------------------------- | ---------------- | -------------------- | --------- |
-ANPRMs              | ||||
-NPRMs               |||||
-SNPRMs              |||||
-Interim Final Rules |||||
-Final Rules         |||||
-Withdrawals         |||||
-Terminations        |||||
+|                    | Days Until OST| Received by ORIA | Days Until Published | Published |
+| ------------------ | ------------- | ---------------- | -------------------- | --------- |
+|ANPRMs              | ||||
+|NPRMs               |||||
+|SNPRMs              |||||
+|Interim Final Rules |||||
+|Final Rules         |||||
+|Withdrawals         |||||
+|Terminations        |||||
 
 
 
