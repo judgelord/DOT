@@ -50,6 +50,8 @@ Find a method to identify the year of earch rule's authorizing statute
 
 Add OIRA report dates 
 
+Infer missing withdrawal dates from date last observed in stage withdrawal
+
 OPM staff resources data for years other than 2016 
 
 ### Model
@@ -90,8 +92,9 @@ There are `r dim(dotRIN)[1]` unique RINs for which we have the date at which the
 
 
 
----
+
  | Days Until OST                    | Received by ORIA | Days Until Published | Published |
+ | --------------------------------- | ---------------- | -------------------- | --------- |
 ANPRMs              | ||||
 NPRMs               |||||
 SNPRMs              |||||
@@ -99,7 +102,7 @@ Interim Final Rules |||||
 Final Rules         |||||
 Withdrawals         |||||
 Terminations        |||||
----
+
 
 
 
@@ -199,4 +202,29 @@ NEGATIVE:
 The Committee is concerned by the FAA's decision to 
 extend by five years its aging Mission Support Network, a 
 decision which carries both technology and cost implications. 
+
+
+
+# Errata
+
+DOT - Unified Agenda rule stage crosswalk:
+ [1] "Final Rule"  = Final Rule                         
+ [2] "Undetermined" = Undetermined                        
+ [3] "NPRM" = Proposed Rule                                
+ [4] "SNPRM" = Prerule                               
+ [5] "Interim Final Rule/4" = Interim Final Rule                
+ [6] "Interim Final Rule" = Interim Final Rule                  
+ [7] "Withdrawal" = Withdrawal                          
+ [8] "Other" = Undetermined                               
+ [9] "ANPRM" = Prerule                               
+[10] "Final Rule/2" = Final Rule/2                        
+[11] "NPRM/2"= Proposed Rule                               
+[12] "SNPRM/2"= SNPRM                             
+[13] "Notice" = Notice                              
+[14] "Supplemental Notice of Intent" = Prerule       
+[15] "Reconsideration of Final Rule" = Final Rule      
+[16] "Disposition of Comments" = Other            
+[17] "Request for Comments" = Other                
+[18] "Final Rule with Request for Comments" = Final Rule
+[19] "Termination"  = Termination (or Withdrawal in summary figures)
 
