@@ -188,21 +188,23 @@ dotRIN %>%
   
 
 
-There are `r length(unique(dotRIN$RIN))` unique RINs for which we have the date at which they were initiated. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' ( `r sum(dotRIN$color == "Black", na.rm = T)` are last observed in the “Black” category). `r dim(distinct(select(dotMonthly, delayedever, RIN)))[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
-`r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` Were initiated after 2008. Of these `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(grepl("Withdrawal", dotRIN$STAGE), na.rm = T)`  have been withdrawn, and `r sum(grepl("Termination", dotRIN$STAGE), na.rm = T)` were terminated.
+We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed,'`r sum(dotRIN$color == "Yellow", na.rm = T)` were marked 'potentially delayed,' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' (`r sum(dotRIN$color == "Black", na.rm = T)` RINs were last observed in the “Black” category). `r dim(distinct(select(dotMonthly, delayedever, RIN)))[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
+
+`r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` RINs were initiated after 2008. `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)` have been withdrawn, and `r sum(dotStage$STAGE == "Termination", na.rm =T)` were terminated.
 
 
 
+This table shows the average number of months after initiation at which certian milestones are reached:
 
-| *MONTHS AFTER INITIATED:*      | to Secretary| to ORIA | Published | *N* |
+| *MONTHS:*   | to Secretary| to ORIA | Published | *N* |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
-|ANPRMs              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Prerule", na.rm =T)` |
-|NPRMs               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)` |
-|SNPRMs              |`r round(mean(dotStage$DaysUntilOSTSNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBSNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilSNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "SNPRM", na.rm = T)` |
-|Interim Final  |`r round(mean(dotStage$DaysUntilOSTIFR, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBIFR, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilIFR, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Interim Final Rule", na.rm =T)`|
-|Final Rules         |`r round(mean(dotStage$DaysUntilOSTFinalRule, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBFinalRule, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilFinalRule, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Final Rule", na.rm =T)`|
-|Withdrawals         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
-|Terminations        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
+|ANPRM              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Prerule", na.rm =T)` |
+|NPRM               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)` |
+|SNPRM              |`r round(mean(dotStage$DaysUntilOSTSNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBSNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilSNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "SNPRM", na.rm = T)` |
+|Interim Final Rule  |`r round(mean(dotStage$DaysUntilOSTIFR, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBIFR, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilIFR, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Interim Final Rule", na.rm =T)`|
+|Final Rule         |`r round(mean(dotStage$DaysUntilOSTFinalRule, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBFinalRule, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilFinalRule, na.rm = T)/30)`| n = `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)`|
+|Withdrawal         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
+|Termination        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
 
 ---
