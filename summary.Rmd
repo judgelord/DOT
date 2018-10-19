@@ -46,11 +46,11 @@ Our findings hold important implications for our understanding of transparency a
 
 ### Data
 
-Find a method to identify the year of earch rule's authorizing statute
+Find a method to identify the year of each rule's authorizing statute
 
 Add OIRA report dates 
 
-Infer missing withdrawal dates from date last observed in stage withdrawal
+Infer missing withdrawal dates from the date last observed in stage withdrawal
 
 Add subagency administrators and secretary data
 
@@ -176,7 +176,7 @@ dotRIN %>%
   summarise(mean(DaysUntilWithdrawal)) %>%
   first()  %>% write("stats/days-until-Withdrawal.tex")
 
-# how many initiated post 2008
+# how many initiated post-2008
 dotRIN %>% 
   filter(initiated > as.Date("2008-01-01")) %>% 
   #filter(!is.na(FinalRulePublished)) %>%  
@@ -194,15 +194,15 @@ There are `r length(unique(dotRIN$RIN))` unique RINs for which we have the date 
 
 
 
-| MONTHS AFTER INITIATED:      | to Secretary| to ORIA | Published | TOTAL PUBLISHED |
+| *MONTHS AFTER INITIATED:*      | to Secretary| to ORIA | Published | *N* |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
-|ANPRMs              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Prerule", na.rm =T)`|
-|NPRMs               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)`|
-|SNPRMs              |`r round(mean(dotStage$DaysUntilOSTSNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBSNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilSNPRM, na.rm = T)/30)`| `r sum(dotStage$STAGE == "SNPRM", na.rm = T)`|
-|Interim Final Rules |`r round(mean(dotStage$DaysUntilOSTIFR, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBIFR, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilIFR, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Interim Final Rule", na.rm =T)`|
-|Final Rules         |`r round(mean(dotStage$DaysUntilOSTFinalRule, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBFinalRule, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilFinalRule, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Final Rule", na.rm =T)`|
-|Withdrawals         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
-|Terminations        |||| `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
+|ANPRMs              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Prerule", na.rm =T)` |
+|NPRMs               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)` |
+|SNPRMs              |`r round(mean(dotStage$DaysUntilOSTSNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBSNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilSNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "SNPRM", na.rm = T)` |
+|Interim Final  |`r round(mean(dotStage$DaysUntilOSTIFR, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBIFR, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilIFR, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Interim Final Rule", na.rm =T)`|
+|Final Rules         |`r round(mean(dotStage$DaysUntilOSTFinalRule, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBFinalRule, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilFinalRule, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Final Rule", na.rm =T)`|
+|Withdrawals         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
+|Terminations        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
 
 ---
@@ -254,39 +254,54 @@ ggplot(aes(x = RIN)) +
         legend.position = "top") 
 ```
 
-Notice how the DOT (esp. FTA and FHA) initiated a large number of projects shortly after Obama's reelection, probably waiting for assureance that they would be able to complete their work.  
+Notice how the DOT (esp. FTA and FHA) initiated a large number of projects shortly after Obama's reelection, probably waiting for assurance that they would be able to complete their work.  
 
 
 ---
 
 ```{r hist-stages}
 # stage histogram 
-ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other", "Final Rule", "Interim Final Rule")), aes(DOTdate, na.rm = T)) +
-  geom_histogram(na.rm = T, bins = 116)  + 
-  facet_grid(STAGE~.) +
-  labs(title = "Active by Stage", x = "")
+ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other", "Final Rule", "Interim Final Rule"))) +
+  stat_count(aes(DOTdate)) +
+  facet_grid(STAGE~., scales = "free_y") +
+  labs(title = "Active per Month by Stage", x = "")
   #scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%y"), minor_breaks=NULL)
 ```
 
-```{r hist-stages-published}
+```{r hist-stages-published, include=FALSE}
 # publication histogram 
 
   ggplot(dotRIN %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Final Rule", "Interim Final Rule")), 
          aes(publicationactual, na.rm = T)) +
-    geom_histogram(na.rm = T, bins = 116)  + 
-    facet_grid(STAGE~.) +
+    geom_histogram(na.rm = T, bins = length(unique(dotRIN$year)))  + 
+    facet_grid(STAGE~., scales = "free_y") +
   labs(title = "Published by Stage", x = "")
   #scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%y"), minor_breaks=NULL)
 ```
 
 ```{r hist-promting-action}
-  dotRIN %>% filter(prompt %in% c("Secretarial/Head of Operating Administration Decision","2011 Retrospective Regulatory Review" , 
-                                  "International Agreement",
-                                  "Settlement Agreement") ) %>% 
+
+
+# Consolidate like stages for plotting:
+dotRIN$STAGE %<>% {gsub("Terminat.*", "Withdrawal",.)}
+dotRIN$STAGE %<>% {gsub(".2$", "", .)}
+dotRIN$STAGE %<>% {gsub(".3$", "", .)}
+dotRIN$STAGE %<>% {gsub(".4$", "", .)}
+dotRIN$STAGE %<>% {gsub("Notice", "Proposed Rule", .)}
+dotRIN$STAGE %<>% {gsub("Other", "Undetermined", .)}
+dotRIN$STAGE %<>% {gsub("Prerule", "Proposed Rule", .)}
+dotRIN$STAGE %<>% {gsub("Interim Final Rule", "Final Rule", .)}
+dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
+
+  dotRIN %>% filter(STAGE %in% c("Final Rule", "Withdrawal")) %>%  mutate(end = if_else( is.na(enddate) & DOTdate != "2018-09-01", reportdate, enddate) ) %>% #filter(prompt %in% c("Secretarial/Head of Operating Administration Decision","2011 Retrospective Regulatory Review" , "International Agreement", Settlement Agreement") ) %>% 
   ggplot() +  
-  geom_density(aes(initiated)) + 
-    # geom_histogram(aes(initiated), bins = 116, na.rm = T ) +
-  labs(title = "Rulemaking Projects Initiated", x = "")
+  geom_point(aes(x = initiated, y = end, color = prompt, shape = STAGE)) + 
+  scale_y_date(limits = c(as.Date("2008-01-01"),as.Date("2019-01-01")),
+               breaks=date_breaks(width = "1 year"), 
+             labels = date_format("%Y") )+
+
+    #geom_smooth(aes(x= if_else(initiated > as.Date("2008-01-01"), initiated, NA), y= enddate), method = "lm" ) +
+  labs(title = "Completed Rulemaking Projects by Prompting Reason and Outcome", x = "Initiated", y = "Published", color = "Prompt to Initiate Project", shape = "")
 ```
 
 
@@ -295,6 +310,7 @@ ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other",
 
 
 ---
+
 ---
 
 # Core Model
@@ -343,7 +359,7 @@ decision which carries both technology and cost implications.
 
 # Notes
 
-DOT - Unified Agenda rule stage crosswalk:
+#### DOT - Unified Agenda rule stage crosswalk:
 
  [1] "Final Rule"  = Final Rule                         
  [2] "Undetermined" = Undetermined                        
@@ -370,43 +386,74 @@ DOT - Unified Agenda rule stage crosswalk:
 ---
 
 
-Covariates: 
+#### Covariates: 
+
+[Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
 
 ##### Resources 
 Resources measures:
+
 - "lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
+
 - number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
+
 - secretary prompt - how many missing? 
 
 ##### Complexity  
+
 Complexity measurements:
+
 - "coordination necessary" claimed [0,1], subset of delayed rules
-- score of abstract on Benoit's political sophistication/complexity
+
+- the score of the abstract on Benoit's political sophistication/complexity
+
 - second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
-- number of comments? (to me this is more about salience and contentiousness than complexity)
+
+- the number of comments? (to me this is more about salience and contentiousness than complexity)
 
 ##### Contentiousness: 
  White House and Secretary alignment measures:
+ 
 - "other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal)
+
 - initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
+
 - went to Secretary twice [0,1]
+
 - days between going to secretary going to ORIA (average if multiple times)
+
 - went to ORIA twice [0,1]
+
 - Did ORIA make changes [0,1]
+
 - days between going to ORIA and final rule (count from the first or last time at ORIA? )
+
 Congress alignment measures:
+
 - positive-negative sentiment words in subcommittee budget report
-- positive-negative sentiment words in subcommittee hearing
+
+- positive-negative sentiment words in the subcommittee hearing
+
 - legislative deadline exists [0,1]
+
 - legislative deadline past [0,1]
+
 - prompting action is legislation [0,1] (speeds up rulemaking?)
+
 - legislation is pending [0,1] (slows rulemaking)
+
 - Reg flex required [0,1] slowing? 
+
 - unified congress 
 
 Litigation threat:
+
 - court deadline exists [0,1]
+
 - court deadline past [0,1]
+
 - number of lawsuits against the subagency in the past x years
+
 - avg number of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
+
 - litigation threatened in comments? [0,1]

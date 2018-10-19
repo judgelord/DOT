@@ -83,7 +83,9 @@ dot$title <- gsub("^.*Popular Title: ", "", dot$title)
 dot$stage <- gsub("^.*Stage: ", "", dot$stage)
 dot$PrevStage <- gsub("^.*(Previous Stage: |Previous Stage:)", "", dot$PrevStage)
 dot$abstract <- gsub("^.*Abstract: ", "", dot$abstract)
-dot$prompt <- gsub("^.*Prompting action: ", "", dot$prompt)
+dot$prompt <- gsub("^.*Prompting action:", "", dot$prompt)
+dot$prompt <- gsub("^ | $", "", dot$prompt)
+dot %<>% mutate(prompt = ifelse(prompt == "", NA, prompt))
 dot$legaldeadline1 <- gsub("^.*Legal Deadline: ", "", dot$legaldeadline1)
 dot$initiated <- gsub("^.*Rulemaking Project Initiated: ", "", dot$initiated)
 dot$docket <- gsub("^.*(Docket Number: |Docket Number:)", "", dot$docket)
@@ -819,7 +821,7 @@ dot$ANPRMtoRule <- round(difftime(dot$FinalRulePublished, dot$ANPRMpublished, un
 dot$NPRMtoRule <- round(difftime(dot$FinalRulePublished, dot$NPRMpublished, units="days"))
 
 
-
+dot$year <- substr(dot$DOTdate, 1,4)
 
 dot %<>% 
   mutate(acronym = strtrim(dot$RIN, 4))
