@@ -188,7 +188,7 @@ dotRIN %>%
   
 
 
-We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed,'`r sum(dotRIN$color == "Yellow", na.rm = T)` were marked 'potentially delayed,' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' (`r sum(dotRIN$color == "Black", na.rm = T)` RINs were last observed in the “Black” category). `r dim(distinct(select(dotMonthly, delayedever, RIN)))[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
+We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed,'`r sum(dotRIN$color == "Yellow", na.rm = T)` were marked 'potentially delayed,' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' (`r sum(dotRIN$color == "Black", na.rm = T)` RINs were last observed in the “Black” category). `r dim(filter(dotMonthly, delayedever == T, !is.na(DOTdate)) %>% select(RIN) %>% distinct())[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
 
 `r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` RINs were initiated after 2008. `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` have Final Rules Published, `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)` have been withdrawn, and `r sum(dotStage$STAGE == "Termination", na.rm =T)` were terminated.
 

@@ -324,7 +324,7 @@ dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub(", , ",", ", dot$whydelay)
 dot$whydelay <- gsub("^,|^, |^ ,|, $", "", dot$whydelay)
-
+dot$whydelay[which(dot$whydelay=="")] <- NA
 
 
 
