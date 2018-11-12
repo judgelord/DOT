@@ -15,6 +15,9 @@ requires <- c("gmailr",
               "reshape2",
               "scales",
               "here",
+              "msm",
+              "survival",
+              "mstate",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
@@ -33,6 +36,10 @@ library(visreg)
 library(reshape2)
 library(scales)
 library(here)
+library(msm)        #v1.6.1
+library(survival)   #v.2.39.5 (!! Important.)
+library(mstate)     #v0.2.9
+
 
 
 # function to fill NAs
