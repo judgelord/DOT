@@ -65,7 +65,7 @@ Add covariates
 # Model
 
 In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition. 
-```{r model}
+```{r model1-data}
 
 
 load(here("data/DOT-perRule-perStage.Rdata"))
@@ -139,7 +139,9 @@ d %<>% filter(exit > entry) # FIXME
 
 # ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS -- DOES IT HELP? 
 d$status <- 1
+```
 
+```{r model-1}
 
 # MODEL WITH NO COVARIATES 
 mod.1 <- coxph(Surv(entry, exit, status) ~ strata(trans), data = d, method = "breslow")
@@ -149,15 +151,20 @@ fit <- msfit(mod.1, trans=tmat, variance=TRUE)
 
 # CAUTION NOTE: in the first run, Withdrawals got dropped, making 4 (NPRM to Final) the 3rd factor
 f <- fit$Haz
+
+f %<>% mutate(Stage = ifelse(trans %in% c(1,2), " Pre NPRM Stage", "Post NPRM Stage") )
+
 f$trans %<>% {gsub(1, "Inititiated to NPRM", .)}
 f$trans %<>% {gsub(2, "Direct to Final", .)}
 f$trans %<>% {gsub(3, "NPRM to Withdrawal", .)} 
 f$trans %<>% {gsub(4, "NPRM to Final", .)} 
 
-names(f) <- c("Days", "Hazard", "Transition")
+names(f) <- c("Days", "Hazard", "Transition", "Stage")
 
 ggplot(f) +
-  geom_line(aes(x = Days, y = Hazard, color = Transition))
+  geom_line(aes(x = Days, y = Hazard, color = Transition)) + 
+  facet_grid(. ~ Stage) + 
+  theme_minimal()
 
 ```
 
