@@ -58,6 +58,12 @@ OPM staff resources data for years other than 2016
 
 ### Model
 
+Properly code observations for previous and future stages
+
+Add covariates
+
+# Model
+
 In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition. 
 ```{r model}
 
