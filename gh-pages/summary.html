@@ -148,11 +148,11 @@ $(document).ready(function () {
 <li><a href="#data">Data</a></li>
 <li><a href="#model">Model</a></li>
 </ul></li>
-<li><a href="#model-1">Model</a></li>
+<li><a href="#core-model">Core Model</a></li>
 <li><a href="#data-1">Data</a><ul>
 <li><a href="#summary-stats">Summary Stats</a></li>
 </ul></li>
-<li><a href="#core-model">Core Model</a></li>
+<li><a href="#models">Models</a></li>
 <li><a href="#covariates">Covariates</a><ul>
 <li><a href="#congressional-attentionopposition">Congressional attention/opposition:</a></li>
 </ul></li>
@@ -185,9 +185,9 @@ $(document).ready(function () {
 <p>Add covariates</p>
 </div>
 </div>
-<div id="model-1" class="section level1">
-<h1>Model</h1>
-<p>In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition.</p>
+<div id="core-model" class="section level1">
+<h1>Core Model</h1>
+<p>Formatting data for multi-stage duration modeling requires identifying the dates of transitions to and from each stage.</p>
 <pre class="r"><code>load(here(&quot;data/DOT-perRule-perStage.Rdata&quot;))
 
 # select vars for minimal model 
@@ -259,6 +259,7 @@ d %&lt;&gt;% filter(exit &gt; entry) # FIXME
 
 # ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS -- DOES IT HELP? 
 d$status &lt;- 1</code></pre>
+<p>In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition.</p>
 <pre class="r"><code># MODEL WITH NO COVARIATES 
 mod.1 &lt;- coxph(Surv(entry, exit, status) ~ strata(trans), data = d, method = &quot;breslow&quot;)
 # summary(mod.1)
@@ -540,58 +541,27 @@ dotRIN$STAGE %&lt;&gt;% {gsub(&quot;SNPRM&quot;, &quot;Proposed Rule&quot;, .)}
 <hr />
 </div>
 </div>
-<div id="core-model" class="section level1">
-<h1>Core Model</h1>
-<p>add core model</p>
+<div id="models" class="section level1">
+<h1>Models</h1>
 </div>
 <div id="covariates" class="section level1">
 <h1>Covariates</h1>
-<div id="congressional-attentionopposition" class="section level2">
-<h2>Congressional attention/opposition:</h2>
-<p>2018 appropriations subcommittee report. Below are examples of positive and negative sentiment about the FAA. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.</p>
-<div id="examples" class="section level4">
-<h4>Examples:</h4>
-<p>POSITIVE:</p>
-<p>The Committee is encouraged by the additional measures the FAA is taking to enhance outreach to communities affected by new flightpaths. The Committee recommendation includes an additional $2,000,000 to support the FAA’s ongoing efforts to address community noise concerns. The Committee supports research that is being conducted through the FAA’s Center of Excellence for Alternative Jet Fuel and Environment, the Aviation Sustainability Center (ASCENT) on the impact of aviation noise on both sleep and cardiovascular health. The Committee commends the FAA Office of Commercial Space Transportation’s efforts to promote private sector lunar exploration and development and encourages the FAA to explicitly define non-interference and to enhance its payload review process to provide companies planning private sector lunar development with the security and predictability necessary to support substantial investments.</p>
-<p>NEGATIVE:</p>
-<p>The Committee is concerned by the FAA’s decision to extend by five years its aging Mission Support Network, a decision which carries both technology and cost implications.</p>
-</div>
-</div>
-</div>
-<div id="notes" class="section level1">
-<h1>Notes</h1>
-<div id="dot---unified-agenda-rule-stage-crosswalk" class="section level4">
-<h4>DOT - Unified Agenda rule stage crosswalk:</h4>
-<p>[1] “Final Rule” = Final Rule<br />
-[2] “Undetermined” = Undetermined<br />
-[3] “NPRM” = Proposed Rule<br />
-[4] “SNPRM” = Prerule<br />
-[5] “Interim Final Rule/4” = Interim Final Rule<br />
-[6] “Interim Final Rule” = Interim Final Rule<br />
-[7] “Withdrawal” = Withdrawal<br />
-[8] “Other” = Undetermined<br />
-[9] “ANPRM” = Prerule<br />
-[10] “Final Rule/2” = Final Rule/2<br />
-[11] “NPRM/2”= Proposed Rule<br />
-[12] “SNPRM/2”= SNPRM<br />
-[13] “Notice” = Notice<br />
-[14] “Supplemental Notice of Intent” = Prerule<br />
-[15] “Reconsideration of Final Rule” = Final Rule<br />
-[16] “Disposition of Comments” = Other<br />
-[17] “Request for Comments” = Other<br />
-[18] “Final Rule with Request for Comments” = Final Rule [19] “Termination” = Termination (or Withdrawal in summary figures)</p>
-<hr />
-</div>
 <div id="covariates-1" class="section level4">
 <h4>Covariates:</h4>
 <p><a href="https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing">Google spreadsheet of variables</a></p>
+<p>Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. We may need to cluster standard errors by rule or agency depending on the covariates.</p>
 <div id="resources" class="section level5">
 <h5>Resources</h5>
 <p>Resources measures:</p>
 <ul>
+<li><p>sub-agency budget? - can we get the budget for rulemaking activities? Is this different than estimating SES?</p></li>
 <li><p>“lack of resources” or “lack of staffing” claimed [0,1], subset of delayed rules</p></li>
 <li><p>number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)</p></li>
-<li><p>secretary prompt - how many missing?</p></li>
+<li><p>secretary prompt [0,1] - how many missing?</p></li>
+<li><p>Non-acting subagency head [0,1]</p></li>
+<li><p>Same president as initiation date [0,1]</p></li>
+<li><p>Same secretary as initiation date [0,1]</p></li>
+<li><p>Same subagency head as initiation date [0,1]</p></li>
 </ul>
 </div>
 <div id="complexity" class="section level5">
@@ -599,22 +569,24 @@ dotRIN$STAGE %&lt;&gt;% {gsub(&quot;SNPRM&quot;, &quot;Proposed Rule&quot;, .)}
 <p>Complexity measurements:</p>
 <ul>
 <li><p>“coordination necessary” claimed [0,1], subset of delayed rules</p></li>
+<li><p>“unanticipated issues/impacts requiring further analysis”*“awaiting development of additional data” claimed [0,1], subset of delayed rules</p></li>
 <li><p>the score of the abstract on Benoit’s political sophistication/complexity</p></li>
 <li><p>second comment period [1,0] (though this may also be a measure of external, interest group constraint)</p></li>
 <li><p>the number of comments? (to me this is more about salience and contentiousness than complexity)</p></li>
+<li><p>MORE MEASURES?</p></li>
 </ul>
 </div>
 <div id="contentiousness" class="section level5">
 <h5>Contentiousness:</h5>
 <p>White House and Secretary alignment measures:</p>
 <ul>
-<li><p>“other, higher priorities” claimed [0,1] (is it right to interpret this way? Priority could also be internal)</p></li>
+<li><p>“other, higher priorities” claimed [0,1] (is it right to interpret this way? Priority could also be internal…which would make it, what? Not a resource per se)</p></li>
 <li><p>initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama)</p></li>
 <li><p>went to Secretary twice [0,1]</p></li>
 <li><p>days between going to secretary going to ORIA (average if multiple times)</p></li>
 <li><p>went to ORIA twice [0,1]</p></li>
 <li><p>Did ORIA make changes [0,1]</p></li>
-<li><p>days between going to ORIA and final rule (count from the first or last time at ORIA? )</p></li>
+<li><p>days between going to ORIA and publication (count days from the first or last time at ORIA? )</p></li>
 </ul>
 <p>Congress alignment measures:</p>
 <ul>
@@ -636,6 +608,42 @@ dotRIN$STAGE %&lt;&gt;% {gsub(&quot;SNPRM&quot;, &quot;Proposed Rule&quot;, .)}
 <li><p>litigation threatened in comments? [0,1]</p></li>
 </ul>
 </div>
+</div>
+<div id="congressional-attentionopposition" class="section level2">
+<h2>Congressional attention/opposition:</h2>
+<p>Below are examples of positive and negative sentiment about the FAA from the 2018 appropriations subcommittee report. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.</p>
+<div id="examples" class="section level4">
+<h4>Examples:</h4>
+<p>POSITIVE:</p>
+<p>The Committee is encouraged by the additional measures the FAA is taking to enhance outreach to communities affected by new flightpaths. The Committee recommendation includes an additional $2,000,000 to support the FAA’s ongoing efforts to address community noise concerns. The Committee supports research that is being conducted through the FAA’s Center of Excellence for Alternative Jet Fuel and Environment, the Aviation Sustainability Center (ASCENT) on the impact of aviation noise on both sleep and cardiovascular health. The Committee commends the FAA Office of Commercial Space Transportation’s efforts to promote private sector lunar exploration and development and encourages the FAA to explicitly define non-interference and to enhance its payload review process to provide companies planning private sector lunar development with the security and predictability necessary to support substantial investments.</p>
+<p>NEGATIVE:</p>
+<p>The Committee is concerned by the FAA’s decision to extend by five years its aging Mission Support Network, a decision which carries both technology and cost implications.</p>
+</div>
+</div>
+</div>
+<div id="notes" class="section level1">
+<h1>Notes</h1>
+<div id="dot---unified-agenda-rule-stage-crosswalk" class="section level4">
+<h4>DOT - Unified Agenda rule stage crosswalk</h4>
+<p>List of unique rule stages and how we code each (Note /2 means the second such document for the same RIN):</p>
+<p>[1] “Final Rule” = Final Rule<br />
+[2] “Undetermined” = Undetermined<br />
+[3] “NPRM” = Proposed Rule<br />
+[4] “SNPRM” = SNPRM (sometimes folded into Proposed Rule) [5] “Interim Final Rule/4” = Interim Final Rule<br />
+[6] “Interim Final Rule” = Interim Final Rule<br />
+[7] “Withdrawal” = Withdrawal<br />
+[8] “Other” = Undetermined<br />
+[9] “ANPRM” = Prerule<br />
+[10] “Final Rule/2” = Final Rule/2<br />
+[11] “NPRM/2”= Proposed Rule<br />
+[12] “SNPRM/2”= SNPRM<br />
+[13] “Notice” = Notice<br />
+[14] “Supplemental Notice of Intent” = Prerule<br />
+[15] “Reconsideration of Final Rule” = Final Rule<br />
+[16] “Disposition of Comments” = Other<br />
+[17] “Request for Comments” = Other<br />
+[18] “Final Rule with Request for Comments” = Final Rule [19] “Termination” = Termination (sometimes folded into Withdrawal)</p>
+<hr />
 </div>
 </div>
 

@@ -62,9 +62,10 @@ Properly code observations for previous and future stages
 
 Add covariates
 
-# Model
+# Core Model
 
-In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition. 
+Formatting data for multi-stage duration modeling requires identifying the dates of transitions to and from each stage. 
+
 ```{r model1-data}
 
 
@@ -140,6 +141,8 @@ d %<>% filter(exit > entry) # FIXME
 # ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS -- DOES IT HELP? 
 d$status <- 1
 ```
+
+In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition. 
 
 ```{r model-1}
 
@@ -422,18 +425,103 @@ dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
 
 ---
 
-# Core Model
-
-add core model
-
+# Models
 
 
 
 # Covariates
 
+#### Covariates: 
+
+[Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
+
+Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. We may need to cluster standard errors by rule or agency depending on the covariates.
+
+##### Resources 
+Resources measures:
+
+- sub-agency budget? - can we get the budget for rulemaking activities? Is this different than estimating SES? 
+
+- "lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
+
+- number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
+
+- secretary prompt [0,1] - how many missing? 
+
+- Non-acting subagency head [0,1]
+
+- Same president as initiation date [0,1]
+
+- Same secretary as initiation date [0,1]
+
+- Same subagency head as initiation date [0,1]
+
+##### Complexity  
+
+Complexity measurements:
+
+- "coordination necessary" claimed [0,1], subset of delayed rules
+
+- “unanticipated issues/impacts requiring further analysis”*“awaiting development of additional data” claimed [0,1], subset of delayed rules
+
+- the score of the abstract on Benoit's political sophistication/complexity
+
+- second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
+
+- the number of comments? (to me this is more about salience and contentiousness than complexity)
+
+- MORE MEASURES? 
+
+##### Contentiousness: 
+ White House and Secretary alignment measures:
+ 
+- "other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal...which would make it, what? Not a resource per se)
+
+- initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
+
+- went to Secretary twice [0,1]
+
+- days between going to secretary going to ORIA (average if multiple times)
+
+- went to ORIA twice [0,1]
+
+- Did ORIA make changes [0,1]
+
+- days between going to ORIA and publication (count days from the first or last time at ORIA? )
+
+Congress alignment measures:
+
+- positive-negative sentiment words in subcommittee budget report
+
+- positive-negative sentiment words in the subcommittee hearing
+
+- legislative deadline exists [0,1]
+
+- legislative deadline past [0,1]
+
+- prompting action is legislation [0,1] (speeds up rulemaking?)
+
+- legislation is pending [0,1] (slows rulemaking)
+
+- Reg flex required [0,1] slowing? 
+
+- unified congress 
+
+Litigation threat:
+
+- court deadline exists [0,1]
+
+- court deadline past [0,1]
+
+- number of lawsuits against the subagency in the past x years
+
+- avg number of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
+
+- litigation threatened in comments? [0,1]
+
 ## Congressional attention/opposition: 
 
-2018 appropriations subcommittee report. Below are examples of positive and negative sentiment about the FAA. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.
+Below are examples of positive and negative sentiment about the FAA from the 2018 appropriations subcommittee report. Much it is very neutral, but it is fair to say that this actually reflects neutral attitudes. Sentiment analysis allows us to tally up the positive and negative words for each subagency. Other scholars have measured the length of the section on each subagency, but this mostly just reflects the size and diversity of its budget.
 
 #### Examples:
 
@@ -468,12 +556,14 @@ decision which carries both technology and cost implications.
 
 # Notes
 
-#### DOT - Unified Agenda rule stage crosswalk:
+#### DOT - Unified Agenda rule stage crosswalk
+
+List of unique rule stages and how we code each (Note /2 means the second such document for the same RIN):
 
  [1] "Final Rule"  = Final Rule                         
  [2] "Undetermined" = Undetermined                        
  [3] "NPRM" = Proposed Rule                                
- [4] "SNPRM" = Prerule                               
+ [4] "SNPRM" = SNPRM (sometimes folded into Proposed Rule)
  [5] "Interim Final Rule/4" = Interim Final Rule                
  [6] "Interim Final Rule" = Interim Final Rule                  
  [7] "Withdrawal" = Withdrawal                          
@@ -488,81 +578,10 @@ decision which carries both technology and cost implications.
 [16] "Disposition of Comments" = Other            
 [17] "Request for Comments" = Other                
 [18] "Final Rule with Request for Comments" = Final Rule
-[19] "Termination"  = Termination (or Withdrawal in summary figures)
+[19] "Termination"  = Termination (sometimes folded into Withdrawal)
 
 
 
 ---
 
 
-#### Covariates: 
-
-[Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
-
-##### Resources 
-Resources measures:
-
-- "lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
-
-- number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
-
-- secretary prompt - how many missing? 
-
-##### Complexity  
-
-Complexity measurements:
-
-- "coordination necessary" claimed [0,1], subset of delayed rules
-
-- the score of the abstract on Benoit's political sophistication/complexity
-
-- second comment period [1,0] (though this may also be a measure of external, interest group constraint) 
-
-- the number of comments? (to me this is more about salience and contentiousness than complexity)
-
-##### Contentiousness: 
- White House and Secretary alignment measures:
- 
-- "other, higher priorities" claimed [0,1] (is it right to interpret this way? Priority could also be internal)
-
-- initiated under same president [0,1] (same party president? we have a few started under Clinton, finished under Obama) 
-
-- went to Secretary twice [0,1]
-
-- days between going to secretary going to ORIA (average if multiple times)
-
-- went to ORIA twice [0,1]
-
-- Did ORIA make changes [0,1]
-
-- days between going to ORIA and final rule (count from the first or last time at ORIA? )
-
-Congress alignment measures:
-
-- positive-negative sentiment words in subcommittee budget report
-
-- positive-negative sentiment words in the subcommittee hearing
-
-- legislative deadline exists [0,1]
-
-- legislative deadline past [0,1]
-
-- prompting action is legislation [0,1] (speeds up rulemaking?)
-
-- legislation is pending [0,1] (slows rulemaking)
-
-- Reg flex required [0,1] slowing? 
-
-- unified congress 
-
-Litigation threat:
-
-- court deadline exists [0,1]
-
-- court deadline past [0,1]
-
-- number of lawsuits against the subagency in the past x years
-
-- avg number of lawsuits against the agency per year of administration (this is perhaps better suited for a model that is not just DOT)
-
-- litigation threatened in comments? [0,1]
