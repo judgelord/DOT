@@ -18,6 +18,8 @@ requires <- c("gmailr",
               "msm",
               "survival",
               "mstate",
+              "knitr",
+              "kableExtra",
               "tidyverse")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
@@ -39,6 +41,8 @@ library(here)
 library(msm)        #v1.6.1
 library(survival)   #v.2.39.5 (!! Important.)
 library(mstate)     #v0.2.9
+library(knitr)
+# library(kableExtra)
 
 
 
