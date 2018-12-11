@@ -1,0 +1,36 @@
+1 - svolik 2015 - discrete.dta (application/x-stata) 477901 bytes.
+3 - svolik 2015 - continuous, no TVC [gap time].dta (application/x-stata) 97500 bytes.
+alt_mssample.R (type/x-r-syntax) 10375 bytes.
+alt_mssample_ms.R (type/x-r-syntax) 10087 bytes.
+dem_cov, full, std.dta (application/x-stata) 529761 bytes.
+dem_cov_small - mstate format--1 - discrete, v1a (France et al).do (application/x-stata-syntax) 5321 bytes.
+dem_cov_small - mstate format--2 - continuous, v1a (France et al).do (application/x-stata-syntax) 8938 bytes.
+dem_cov_small 3, vichy, std.dta (application/x-stata) 363076 bytes.
+egenD.ado (application/octet-stream) 2062 bytes.
+fake HoR.dta (application/x-stata) 1709 bytes.
+Figure 2.R (type/x-r-syntax) 1699 bytes.
+Figure 5.R (type/x-r-syntax) 1863 bytes.
+Figure 6 - CR.R (type/x-r-syntax) 5017 bytes.
+Figure 6 - mstate.R (type/x-r-syntax) 199 bytes.
+Figure 8.R (type/x-r-syntax) 1124 bytes.
+Figure 9.R (type/x-r-syntax) 1794 bytes.
+genD.ado (application/octet-stream) 2138 bytes.
+id.ado (application/octet-stream) 5039 bytes.
+id.sthlp (application/octet-stream) 2024 bytes.
+labPre.ado (application/octet-stream) 1476 bytes.
+MonteCarlo_Simulations.RData (application/x-rlang-transport) 537951 bytes.
+MSM_Sim.R (type/x-r-syntax) 9465 bytes.
+README.txt (text/plain) 1053 bytes.
+Simulations.RData (application/x-rlang-transport) 173234 bytes.
+states, 2 - UoA=ccode-mth-yr.dta (application/x-stata-13) 7484246 bytes.
+states2011 [ccode].csv (text/csv) 10847 bytes.
+Svolik - trans probs (sims).R (type/x-r-syntax) 14851 bytes.
+Svolik 2015 - Wald tests [gap time].do (application/x-stata-syntax) 5751 bytes.
+system, v0 (original).dta (application/x-stata) 331752 bytes.
+Table 1.R (type/x-r-syntax) 414 bytes.
+Table 6.R (type/x-r-syntax) 271 bytes.
+Table 7.R (type/x-r-syntax) 340 bytes.
+Table 8.R (type/x-r-syntax) 4163 bytes.
+Tables 2 + 5.R (type/x-r-syntax) 3064 bytes.
+_data assembly master [Svolik 2015].do (application/x-stata-syntax) 291 bytes.
+__master - PA replication (read me!).do (application/x-stata-syntax) 10792 bytes.
