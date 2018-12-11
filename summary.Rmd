@@ -206,6 +206,9 @@ This table shows the average number of months after initiation at which certian 
 |Withdrawal         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
 |Termination        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
+\Sexpr{knit_child('stats/days-until-ANPRM-to-OST.tex')}
+
+
 
 ---
 
