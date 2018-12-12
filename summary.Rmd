@@ -195,7 +195,7 @@ We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of thes
 
 This table shows the average number of months after initiation at which certian milestones are reached:
 
-| *MONTHS:*   | to Secretary| to ORIA | Published | *N* |
+| *Average months until:*   | to Secretary| to ORIA | Published | *N* |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
 |ANPRM              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Prerule", na.rm =T)` |
 |NPRM               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)` |
