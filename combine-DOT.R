@@ -7,16 +7,13 @@
 source("setup.R")
 Sys.setlocale('LC_ALL','C') 
 
-## Load all ORIA + UA object named "regs"
-load( url("https://github.com/judgelord/reginfo.gov/raw/master/data/OIRAandUA.Rdata") )
-## or
-# regs <- read.csv("Data/OIRA and UA.csv")
+## Load all ORIA + Unified Agenda data a object "regs"
+load( url("https://github.com/judgelord/rulemaking/raw/master/data/OIRAandUA.Rdata") )
 
 #########################################################################
 
 # Read in first report "reports/DOTclean/200801DOTclean.csv"
 dot <- read.csv("reports/DOTclean/200801DOTclean.csv")
-
 
 # Read in the rest
 dot <- dot[0,] # start with empty data frame
@@ -25,7 +22,7 @@ for( i in list.files(path = "reports/DOTclean/") ){
   dot <- rbind(dot, read.csv(here("reports/DOTclean/", i)))
 }
 
-# MISSING:
+# MISSING REPORTS:
   # read.csv("200808DOTclean.csv", stringsAsFactors = F)
   #   read.csv("200808bDOTclean.csv", stringsAsFactors = F)
   #  read.csv("200912bDOTclean.csv", stringsAsFactors = F)
@@ -42,6 +39,8 @@ for( i in list.files(path = "reports/DOTclean/") ){
 
 # order by date decending
 # dot <- dot[order(-dot$date),]
+
+# SAVE ORIGINAL DATA
 original <- dot
 #replace NA with blank
 dot <- dot[!is.na(dot$RIN),] 
@@ -222,6 +221,25 @@ for(i in 1:dim(dot)[1]){
 dot$PrevStage <- gsub("Interim FinalRule", "Interim Final Rule", dot$PrevStage)
 dot$stage <- gsub("Interim FinalRule", "Interim Final Rule", dot$stage)
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # deadlines
 dot$FinalRuleDeadline = NA
 for(i in 1:dim(dot)[1]){
@@ -381,6 +399,12 @@ for(i in 1:dim(dot)[1]){
   }}
 
 
+
+
+
+
+
+
 dotALL <- dot
 
 
@@ -427,14 +451,14 @@ dot <- dplyr::ungroup(dot)
 # Merge OIRA/UA with DOT #
 #############################################################
 
-# merge data
+# Note that many are not in the DOT data. Filter !is.na(initiated) to get only DOT report RINs
 dot <- full_join(dotlast,
-                 # subset OIRA and Unified Agenda  to only DOT RINs
+                 # subset OIRA and Unified Agenda to only DOT RINs
                  regs %>% filter( grepl("^21", RIN) ) ) 
 
 dot <- unique.data.frame(dot)
 
-
+# define report date first by DOT reports, then UA, then ORIA 
 dot$reportdate <- dot$DOTdate
 for(i in 1:dim(dot)[1]){
   if(!grepl("-", dot$reportdate[i])){dot$reportdate[i] <- as.character(dot$UnifiedAgendaDate[i])}
@@ -443,7 +467,10 @@ for(i in 1:dim(dot)[1]){
 
 
 
-# copy info to across obs of the same initialization date # CHECK THIS, perhaps use group_by() # FIXME
+# copy info to across obs of the same initialized date
+# FIXME
+# FIX with mutate() to improve speed
+# group_by(RIN) %>% mutate(initiated = paste(unique(initiated), collapse = ";") )
 dot %<>% arrange((reportdate)) %>%
   transform(initiated = ave(initiated, RIN, FUN = CopyIfNA)) %>%
   transform(agency = ave(agency, RIN, FUN = CopyIfNA)) %>%
@@ -614,8 +641,9 @@ dot %<>% arrange(desc(reportdate)) %>%
   transform(FinalRuleclearOMB = ave(FinalRuleclearOMB, RIN, FUN = CopyIfNA))
 
 
-################################## FIX ################################
-  # Dates Published
+################################## FIX? ################################
+
+# Dates Published by stage
 for(i in 1:dim(dot)[1]){
   if(!grepl("-", dot$ANPRMpublished) & dot$STAGE[i] == "Prerule"){dot$ANPRMpublished[i] <- as.character(dot$publicationactual[i])}
   if(!grepl("-", dot$ANPRMpublished[i])){dot$ANPRMpublished[i] <- as.character(dot$ANPRM_PUBLISHED[i])}
@@ -631,6 +659,7 @@ for(i in 1:dim(dot)[1]){
   if(!grepl("-", dot$WithdrawalPublished[i])){dot$WithdrawalPublished[i] <- as.character(dot$WITHDRAWAL[i])}
 }
 
+# copy missing from UA
 dot %<>%
   mutate(ANPRMpublished = ifelse(!grepl("-", ANPRMpublished) & STAGE=="Prerule", as.character(publicationactual), NA)) %>%
   mutate(ANPRMpublished = ifelse(!grepl("-", ANPRMpublished), as.character(ANPRM_PUBLISHED), NA)) %>%
@@ -643,6 +672,7 @@ dot %<>%
   mutate(FinalRulePublished = ifelse(!grepl("-", FinalRulePublished) & STAGE=="Final Rule", as.character(publicationactual), NA)) %>%
   mutate(FinalRulePublished = ifelse(!grepl("-", FinalRulePublished), as.character(FINAL_PUBLISHED), NA))
 
+# copy missing from other reports
 dot %<>% arrange((reportdate)) %>%
   transform(ANPRMpublished = ave(ANPRMpublished, RIN, FUN = CopyIfNA)) %>%
   transform(SNPRMpublished = ave(SNPRMpublished, RIN, FUN = CopyIfNA)) %>%
@@ -658,6 +688,11 @@ dot %<>% arrange(desc(reportdate)) %>%
   transform(FinalRulePublished = ave(FinalRulePublished, RIN, FUN = CopyIfNA)) %>%
   transform(WithdrawalPublished = ave(WithdrawalPublished, RIN, FUN = CopyIfNA))
   
+# make a list of stages 
+
+# make a list of transitions
+dot %<>% mutate(timetable = paste("ANPRM:", ANPRMpublished,"| NPRM:", NPRMpublished, "| IFR:", IFRpublished,"| Final:", FinalRulePublished, "| Withdrawal: ", WithdrawalPublished))
+
 dot$enddate <- dot$FinalRulePublished
 dot$enddate[which(is.na(dot$enddate))] <- dot$WithdrawalPublished[which(is.na(dot$enddate))]
 
@@ -696,6 +731,7 @@ dot$SNPRMcomment[which(is.na(dot$SNPRMcomment) & dot$STAGE=="SNPRM")] <- dot$end
 dot$IFRcomment[which(is.na(dot$IFRcomment) & dot$STAGE=="Interim Final Rule")] <- dot$endcommentactual[which(is.na(dot$IFRcomment) & dot$STAGE=="Interim Final Rule")]
 dot$FinalRulecomment=NA
 dot$FinalRulecomment[which(is.na(dot$FinalRulecomment) & dot$STAGE=="Final Rule")] <- dot$endcommentactual[which(is.na(dot$FinalRulecomment) & dot$STAGE=="Final Rule")]
+
 # extended
 dot %<>%
   ungroup() %>%
@@ -820,15 +856,16 @@ dot$TotalDays <- round(difftime(dot$enddate, dot$initiated, units="days"))
 dot$ANPRMtoRule <- round(difftime(dot$FinalRulePublished, dot$ANPRMpublished, units="days"))
 dot$NPRMtoRule <- round(difftime(dot$FinalRulePublished, dot$NPRMpublished, units="days"))
 
-
+# year 
 dot$year <- substr(dot$DOTdate, 1,4)
 
+
+# Agency acronyms
 dot %<>% 
   mutate(acronym = strtrim(dot$RIN, 4))
-  
-#?stringtrim
 
 unique(dot$acronym)
+
 dot$acronym %<>% 
   gsub("2137","PHMSA", .) %>%
   gsub("2127","NHTSA", .) %>%
@@ -841,28 +878,24 @@ dot$acronym %<>%
   gsub("2133","MA", .) %>%
   gsub("2139","RITA", .) %>%
   gsub("2135","St Lawernce", .)
-  
 
-
-dot %<>% dplyr::select(initiated, toOMBactual, resubmitOMB2actual, DATE_RECEIVED, toOMBdiff, clearOMBactual, DATE_COMPLETED, clearOMBdiff, publicationactual, DATE_PUBLISHED, publisheddiff, DOTdate, UnifiedAgendaDate, UAdiff, RIN,  STAGE, PrevStage, TIMETABLE_LIST, agency, fulltitle,  ANPRMpublished, ANPRM, NPRMpublished, NPRM, SNPRM, IFRpublished, IFR, FinalRulePublished, FINAL,  fedreg, ANPRMfedreg, NPRMfedreg, SNPRMfedreg, IFRfedreg, FINALfedreg, docket,  whydelay, color, everything())
-
+# Does the RIN have an ANPRM?
 dot %<>%
   ungroup() %>%
   mutate(HasANPRM = ifelse(is.na(dot$ANPRMpublished),0, 1))
-# dot$HasANPRM
-
-# dot %<>% dplyr::select(RIN, agency, fulltitle, initiated, WithdrawalPublished, FinalRulePublished, DaysUntilANPRM, DaysANPRMatOMB, DaysUntilNPRM, DaysNPRMatOMB, DaysUntilSNPRM, DaysUntilIFR, DaysIFRatOMB, DaysUntilFinalRule, DaysFRatOMB, DOTdate, UnifiedAgendaDate, STAGE, PrevStage, TIMETABLE_LIST, toOMBactual, DATE_RECEIVED, ANPRMpublished, ANPRM, NPRMpublished, NPRM, SNPRM, IFRpublished, IFR, FinalRulePublished, FINAL,  fedreg, ANPRMfedreg, NPRMfedreg, SNPRMfedreg, IFRfedreg, FINALfedreg, docket,  whydelay, color, everything())
 
 
-dot %<>% dplyr::select(RIN, docket, agency, acronym, fulltitle, initiated, enddate, reportdate, STAGE, PrevStage, TIMETABLE_LIST, #TotalDays,
+dot %<>% dplyr::select(RIN, docket, agency, acronym, fulltitle, 
+                       initiated, STAGE, PrevStage, TIMETABLE_LIST, timetable, #TotalDays,
+                       DOTdate, UnifiedAgendaDate, 
+                       toOMBactual, DATE_RECEIVED, resubmitOMB2actual, 
+                       ANPRMpublished, NPRMpublished, SNPRMpublished, IFRpublished, FinalRulePublished, WithdrawalPublished,
+                       enddate, reportdate,
                        DaysUntilANPRM, DaysUntilOSTANPRM, DaysUntilOMBANPRM, DaysANPRMatOMB,
                        DaysUntilNPRM, DaysUntilOSTNPRM, DaysUntilOMBNPRM, DaysNPRMatOMB,
                        DaysUntilIFR, DaysUntilOSTIFR, DaysUntilOMBIFR, DaysIFRatOMB,
                        DaysUntilFinalRule, DaysUntilOSTFinalRule, DaysUntilOMBFinalRule, DaysFRatOMB,
                        DaysUntilWithdrawal,
-                       DOTdate, UnifiedAgendaDate, 
-                       toOMBactual, DATE_RECEIVED, resubmitOMB2actual, 
-                       ANPRMpublished, NPRMpublished, SNPRMpublished, IFRpublished, FinalRulePublished, WithdrawalPublished,
                        fedreg, ANPRMfedreg, NPRMfedreg, SNPRMfedreg, IFRfedreg, FINALfedreg, whydelay, color, everything())
 
 
