@@ -776,12 +776,13 @@ dot %<>% mutate(DATE_PUBLISHED = ifelse(DATE_PUBLISHED == "", NA, DATE_PUBLISHED
 # dot %<>% mutate(enddate = ifelse(enddate == "", NA, enddate))
 
 # published 
-dot %<>% mutate(ANPRMpublished = ifelse(ANPRMpublished == "", NA, ANPRMpublished))
+dot %<>% mutate(ANPRMpublished = ifelse(ANPRMpublished %in% c("","NA"), NA, ANPRMpublished))
 dot %<>% mutate(ANPRMpublished = as.Date(ANPRMpublished))
 dot %<>% mutate(NPRMpublished = as.Date(NPRMpublished))
 dot %<>% mutate(SNPRMpublished = as.Date(SNPRMpublished))
+dot %<>% mutate(IFRpublished = ifelse(IFRpublished %in% c("","NA"), NA, IFRpublished))
 dot %<>% mutate(IFRpublished = as.Date(IFRpublished))
-dot %<>% mutate(FinalRulePublished = ifelse(FinalRulePublished == "", NA, FinalRulePublished))
+dot %<>% mutate(FinalRulePublished = ifelse(FinalRulePublished %in% c("","NA"), NA, FinalRulePublished))
 dot %<>% mutate(FinalRulePublished = as.Date(FinalRulePublished)) # why so many "" ? 
 # clear OMB
 dot %<>% mutate(ANPRMclearOMB = as.Date(ANPRMclearOMB))
@@ -793,15 +794,16 @@ dot %<>% mutate(Terminated = as.Date(Terminated))
 
 dot %<>% mutate(enddate = ifelse(enddate == "", NA, enddate))
 dot %<>% mutate(enddate = as.Date(enddate))
+dot$DATE_RECEIVED %<>% as.Date()
 
 
-# # more dates 
-for(x in c(76:86, 151, 166:180, 182:212)){
-  dot[,x] <- as.Date(dot[,x])
+# # Format any more dates 
+for(x in dim(dot)[2]){
+  tryCatch(
+  dot[,x] <- as.Date(dot[,x]),  error = function(e) e
+  )
 }
-x
-names(dot)[x]
-# sort(dot[, x])
+
 
 
 
@@ -818,7 +820,6 @@ names(dot)[x]
   
 
 #names(dot)
-
 # Differences between reported dates
 dot$toOMBdiff <- difftime(dot$DATE_RECEIVED, dot$toOMBactual, units="days")
 dot$clearOMBdiff <- difftime(dot$DATE_COMPLETED, dot$clearOMBactual, units="days")
