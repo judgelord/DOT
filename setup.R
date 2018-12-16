@@ -49,7 +49,7 @@ library(knitr)
 # library(kableExtra)
 library(survminer)
 library(ggfortify)
-
+library(broom)
 
 # function to fill NAs
 CopyIfNA <- function(x, na.rm = FALSE, ...) na.locf(x, na.rm = na.rm, ...)

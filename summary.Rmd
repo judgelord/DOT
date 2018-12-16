@@ -5,18 +5,14 @@ output:
     toc: true
     code_folding: hide
 ---
----
 
 ```{r setup, include=FALSE}
 source("setup.R")
 
-
 # ABSTRACT NOTES
 # https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
 
-
-  
-  # 2016 OPM fedscope text files
+# 2016 OPM fedscope text files
   # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
 ```
 
@@ -88,103 +84,6 @@ dotMonthly %<>% group_by(RIN) %>%
 [Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
 
 ### Summary Stats
-```{r summarystats}
-# HOW MANY WITH REASON (NOTE NEED TO CORRECT WHYDELAY CONCAT)
-# dotRIN$whydelay1 <- gsub("N/A",NA,dotRIN$whydelay1)
-# sum(!is.na(dotRIN$whydelay1))
-sum(!is.na(dotRIN$whydelay))  %>%
-write("stats/RINsWithReasonsForDelay.tex")
-
-# HOW MANY DELAYED
-filter(dotRIN, color %in% c("Red", "Yellow")) %>%
-  n_distinct(.$RIN) %>%
-  write("stats/RINsDelayed.txt")
-
-# HOW MANY NOT DELAYED WHEN PUBLISHED
-filter(dotRIN, color %in% c("Black", "Green")) %>%
-  n_distinct(.$RIN) %>%
-  write("stats/RINsNotDelayed.tex")
-
-# HOW MANY AT EACH STAGE 
-n_distinct(dotRIN$RIN)   %>% write("stats/uniqueRINs.tex")
-
-sum(!is.na(dotRIN$ANPRMpublished))   %>% write("stats/ANPRMs.tex")
-
-sum(!is.na(dotRIN$ANPRM_RECIEVED))  %>% write("stats/ANPRMs-recieved-by-OMB.tex")
-
-sum(!is.na(dotRIN$ANPRMtoOST))  %>% write("stats/ANPRMs-to-OST.tex")
-
-sum(!is.na(dotRIN$NPRMpublished))   %>% write("stats/NPRMs.tex")
-
-sum(!is.na(dotRIN$NPRMtoOST))  %>% write("stats/NPRMs-to-OST.tex")
-
-sum(!is.na(dotRIN$NPRM_RECIEVED))  %>% write("stats/NPRMs-recieved-by-OMB.tex")
-
-sum(!is.na(dotRIN$SNPRMpublished))   %>% write("stats/SNPRMs.tex")
-
-sum(!is.na(dotRIN$SNPRM_RECIEVED))  %>% write("stats/SNPRMs-recieved-by-OMB.tex")
-
-sum(!is.na(dotRIN$IFRpublished))   %>% write("stats/IFRs.tex")
-
-sum(!is.na(dotRIN$IFR_RECIEVED))  %>% write("stats/IFRs-recieved-by-OMB.tex")
-
-sum(!is.na(dotRIN$FinalRulePublished))   %>% write("stats/FinaldotRIN.tex")
-
-sum(!is.na(dotRIN$FINAL_RECIEVED))  %>% write("stats/FinaldotRIN-recieved-by-OMB.tex")
-
-sum(!is.na(dotRIN$WithdrawalPublished))  %>% write("stats/Withdrawals.tex")
-
-
-
-#############################################################
-# days-until-EVENT 
-#############################################################
-dotRIN %>% 
-  filter(!is.na(DaysUntilANPRM)) %>% 
-  summarise(mean(DaysUntilANPRM)) %>%
-  first()   %>% write("stats/days-until-ANPRM.tex")
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilNPRM)) %>% 
-  summarise(mean(DaysUntilNPRM)) %>%
-  first()   %>% write("stats/days-until-NPRM.tex")
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilFinalRule)) %>% 
-  summarise(mean(DaysUntilFinalRule)) %>%
-  first()   %>% write("stats/days-until-final.tex")
-
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilOSTANPRM)) %>% 
-  summarise(mean(DaysUntilOSTANPRM)) %>%
-  first()   %>% write("stats/days-until-ANPRM-to-OST.tex")
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilOSTNPRM)) %>% 
-  summarise(mean(DaysUntilOSTNPRM)) %>%
-  first()   %>% write("stats/days-until-NPRM-to-OST.tex")
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilOSTFinalRule)) %>% 
-  summarise(mean(DaysUntilOSTFinalRule)) %>%
-  first()   %>% write("stats/days-until-Final-to-OST.tex")
-
-dotRIN %>% 
-  filter(!is.na(DaysUntilWithdrawal)) %>% 
-  summarise(mean(DaysUntilWithdrawal)) %>%
-  first()  %>% write("stats/days-until-Withdrawal.tex")
-
-# how many initiated post-2008
-dotRIN %>% 
-  filter(initiated > as.Date("2008-01-01")) %>% 
-  #filter(!is.na(FinalRulePublished)) %>%  
-  n_distinct(.$RIN) %>%
-  first() %>% write("stats/initiatedSince2008.tex")
-
-  # unique(dotRIN$prompt)
-```
-  
 
 
 We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed,'`r sum(dotRIN$color == "Yellow", na.rm = T)` were marked 'potentially delayed,' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' (`r sum(dotRIN$color == "Black", na.rm = T)` RINs were last observed in the “Black” category). `r dim(filter(dotMonthly, delayedever == T, !is.na(DOTdate)) %>% select(RIN) %>% distinct())[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
@@ -205,7 +104,6 @@ This table shows the average number of months after initiation at which certian 
 |Withdrawal         |`r round(mean(dotStage$DaysUntilOSTWithdrawal, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBWithdrawal, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilWithdrawal, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)`|
 |Termination        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
-\Sexpr{knit_child('stats/days-until-ANPRM-to-OST.tex')}
 
 
 
@@ -317,17 +215,28 @@ dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
 
 # Models
 
-We are interested in two kinds of outcomes: (1) what happens? and(2) how long does it take?
+We are interested in two kinds of outcomes: (1) what happens? and (2) how long does it take?
 
 Given these questions and the timeseries nature of data (montly status reports with changing covariate values), we use duration models. Because we are interested in how policies may move through multiple stages of the policymaking process, we use a multi-state model. Doing so allows us to simultaniously model how different factors may affect a policy at different stages, while also modeling a common fraility across rules. We could model each stage seperately, but this would overlook correlation within rules across stages. 
 
 Two interpretable statistics address each of our main questions. 
 
 First, we estimate "transition probabilities" (i.e. the probablity that a policy will advance to each possible future state at a given time) using the from Aalen-Johansen estimator, also known as the cumulative incidence function (the function estimating the number of observations that have transitioned to and from each state over time). 
-
 Second, we estimate the probability that a given transition will occur in a given time window using the Kaplan-Meier estimator. Covariates may increase or decrease the liklihood that a given transition will occur, thus increaseing or decreasing the estimated rate, $\lambda$, of advancing from a given stage to a given stage in the policymaking process, and thus the Kaplan-Meier estimate that a given transition will occur after a given date. 
 
-To capture common elements of each rule, we use a penalised likelihood a random effects (frailty) model, with frailties for each rulemaking project (each Regultory Identification Number). 
+To capture common elements of each rule, we use a penalised likelihood a random effects---a [frailty](https://www.rdocumentation.org/packages/survival/versions/2.11-4/topics/frailty) model---with frailties for each rulemaking project (each Regultory Identification Number). 
+
+The paper that is most similar to the analysis we aim to conduct is ["Surviving Phases: Introducing Multi-state Survival Models"](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Metzger-and-Jones-Surviving-Phases-VIM-07MAY15rev%20(1).pdf) by Metziger and Jones in Poltical Analysis. I have not yet found their [replication materials](https://github.com/judgelord/DOT/tree/master/surviving_phases_dataverse) to be very helpful, but their [appendix](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Jones%20and%20Metzger%2C%20Appendices.pdf) has some useful illustrations.
+
+We use [mstate](https://www.jstatsoft.org/article/view/v038i07), an R package has been developed for multi-state duration modeling. Unfortunatly, the [vignette](https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf) does not use tidy data and is not the most helpful. Other R packages that could be relevent are `TPmsm` which also estimates transition probabilities. 
+
+There is a useful [multi-state and competing risk vignette](https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf) on cran. 
+
+rpubs has a useful [review of survival analysis](https://rpubs.com/alecri/258589).
+
+There are several ggplot wrappers for plotting survival objects, including [ggsurvplot](https://rpubs.com/alecri/258589) and [survminer](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf), but I opt to skip the wrappers and use tidy data.
+
+The `tidy()` function from the `broom` package converts `survfit` objects into tidy dataframes via [tidy.survit](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit). Unfortunatly, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. Once I better understand the relationship between KM estimates, Cumulative Incidnece Functions, and transition probabilities, I may be about to bypass the `mstate` package. The inconsistancy in naming and structure of various survival analysis objects is very annoying.
 
 
 ## Core Model
@@ -335,7 +244,391 @@ First, we model the most common stages that rules go through with no covariates,
 
 Formatting data for multi-stage duration modeling requires identifying the dates of transitions to and from each stage. To do this we must define and index a set of transitions of interest. The data are formatted as one observation per rule per transition. The key variable is the days since the rulemaking project was initiated at which that transition occured. 
 
+```{r prepdata}
+# PREP DATA ###########################
+# Here we take event data with rows indexed by ID and columns for relevent dates and covariates.
+# The method takes date variables, melts the data to identify the order in which various transitions occur, and, finally, models transitions in and out of each stage as a multi-state survival model. 
+# THis is a slightly more generic approach than the mstate package vinettes as it does not require one to specifiy which transitions are possible or actually present in the data. Instead, the transition matrix is derived from the data.
+# It also attempts to keep data in a tidy format (rather than special class objects). 
+
+# First we identify the order in which events occured in order to identify different types of transitions. 
+
+# STEP 1: IDENTIFY TRANSITIONS AND DATES 
+
+# These data start as one observation per ID (in this case, "RIN"). I will be extending this approach to data frames of montly observations for each RIN
+load(here("data/DOT-perRule.Rdata"))
+
+# First, identify an ID variable so that we can split out transitions observed for each ID 
+d <- original <- rename(dotRIN, id = RIN)
+
+# Select a set of events to model (We will merge back in with covariates later.)
+d %<>% select(id, Initiated, NPRMpublished, FinalRulePublished, WithdrawalPublished)
+
+# Melt data to be one observation per event
+d %<>% 
+  melt(id = "id", na.rm = T, value.name = "transition_date") %>% 
+  distinct()
+
+# Convert dates to strings for now to make things easier (specifically, the super-useful mutate(ifelse()) method). 
+d$transition_date %<>% as.character()
+
+# Group by RIN and identify sequence
+d %<>% 
+  group_by(id) %>% 
+  arrange(transition_date) %>% 
+  rename(event = variable) %>%
+  # clean up text for this example
+  mutate(event = str_replace(event, " *$|published|Published", "")) %>%
+  mutate(event = str_replace(event, "FinalRule", "Final Rule")) %>%
+  # make a variable describing the path each took
+  mutate(transitions = paste(event, collapse = " to ")) 
+  
+# Parse transitions from sequence (how do I make this more general?)
+d %<>% separate(transitions, into= c("t1", "t2", "t3", "t4", "t5"), sep=" to ") %>% 
+  #mutate(Initiated = t1) %>% 
+  mutate(t1 = paste(t1, "to", t2)) %>% 
+  mutate(t2 = paste(t2, "to", t3)) %>% 
+  mutate(t3 = paste(t3, "to", t4)) %>% 
+  mutate(t4 = paste(t4, "to", t5))
+
+# melt back down to one observation per id per transition event
+d %<>% melt(id = c("id", "event", "transition_date"), na.rm = T, value.name = "transition") %>% 
+  rename(transition_count = variable) %>% 
+  filter( !grepl(" to NA", transition) )
+
+# identify entry and exit dates for each state 
+d %<>% 
+  group_by(id, transition) %>% 
+  mutate(exit_date = ifelse(event == gsub(".* to ", "", transition),
+                            transition_date, 
+                            NA)) %>% 
+  mutate(exit_date = max(na.omit(exit_date))) %>%
+  mutate(entry_date = ifelse(event == gsub(" to .*", "", transition),
+                            transition_date, 
+                            NA)) %>% 
+  mutate(entry_date = max(na.omit(entry_date) ) )
+
+# Now that we have identified transitions and the entry and exit dates, we no longer need the `event` and `transition_date` variables 
+# However, we will need the event names for the tranition matrix, so we save them
+events <- as.character(unique(d$event))
+d %<>% select(-event, -transition_date) %>% distinct()
+
+###############################
+# STEP 2: MERGE BACK WITH DATA
+d %<>% left_join(original) %>% ungroup() %>% arrange(id) 
+
+# Count days until event with `difftime()`
+d %<>% 
+  mutate(exit = as.numeric(difftime(exit_date, Initiated, units="days") ) )%>% 
+  mutate(entry = as.numeric(difftime(entry_date, Initiated, units="days") ) ) 
+
+# Days until initiated is obviously 0, but difftime has odd rounding, so let us fix that:
+d$entry[grepl("^Init", d$transition)] <- 0
+
+# NOTE THERE ARE SOME ERRORS IN THESE DATA (at least one left) THAT MAY NEED TO BE INVESTIGATED IF THEY PERSIST AFTER PROPER CODING OF TRANSITIONS 
+d %<>% filter(exit > entry) # FIXME
+
+# Finally, we define the time until the event
+d %<>% mutate(time = exit - entry)
+
+
+  
+##########################################################
+# INDEX TRANSITIONS 
+d$transition %<>% as.factor()
+trans <- tlevels <- levels(d$transition)
+
+# Possible transitions from state i
+for(i in 1:length(events)){
+  trans <- gsub(events[i], i, trans)
+}
+
+# Make a trasition matrix (indexing transitions to and from each state)
+trans <- str_split(trans, " to ", simplify = TRUE)
+
+# Use the matrix to populate a list for the transMat()
+from <- list()
+for(i in 1:length(events)){
+  from[[i]] <- as.numeric(trans[which(trans[,1]==i),2])
+}
+
+# Transition Matrix
+tmat <- transMat(from, names = events)
+
+
+
+# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariats that have values for those non-transition months?
+d$status <- 1
+```
+
+In estimation, the multi-stage duration model is stratified by transition. 
+
+Simple example:
+`fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)`
+
+`autoplot(fit) # km estimate per strata`
+
+
+Now with tidy data:
+```{r survfit}
+fit <- survfit(Surv(entry, exit, status) ~  strata(transition), data = d) %>%
+  tidy() 
+
+fit %<>% # clean up text 
+  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
+
+fit %>%   #filter(estimate > 0) %>%
+  filter(time<3650) %>% # limit to 10 year timeframe
+  ggplot(aes(x = time/365, estimate)) + 
+  geom_line() +
+  scale_x_continuous(breaks = seq(0,10, by = 1)) +
+  geom_point(shape = "+") + 
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=.25) + 
+  facet_grid(to ~ from, scales = "free_x") + 
+  labs(x = "Years" , y = "KM probability transition takes longer than t")
+```    
+
+Now with tidy data and a covariate:
+```{r survfit-major}
+fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(transition), data = d) %>%
+  tidy() 
+
+fit %<>%
+  separate(strata, c("Major", "strata"), ", ") %>% 
+  #filter(estimate > 0) %>%
+  filter(time<3650) %>% # limit to 10 year timeframe
+  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
+
+fit %>% 
+ggplot(aes(x = time/365, estimate)) + 
+  geom_line(aes(color = Major)) +
+  scale_x_continuous(breaks = seq(0,10, by = 1)) +
+  geom_point(aes(color = Major), shape = "+") + 
+  geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
+  facet_grid(to ~ from, scales = "free_x") + 
+  labs(x = "Years" , y = "KM probability transition takes longer than t")
+```    
+
+Now using the multi-state method (I am not yet clear on exactly how type = "mstate" is different):
+
+```{r mstate}
+# Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?
+fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ 1,
+                 data = d) %>% tidy()
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
+
+# plot
+fit %>% 
+  ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```  
+
+Normalize by state (because we care about the competing risk within each state.)
+
+```{r mstate-percent}
+fit %<>% 
+  group_by(Transition) %>% 
+  mutate(max = max(estimate)) %>% 
+  ungroup() %>% 
+  group_by(from, time) %>% 
+  mutate(estimate = estimate/(sum(max))) %>%
+  mutate(max = max/sum(max)) %>% 
+  ungroup()
+
+
+# plot
+fit %>% filter(time < 3650) %>% 
+ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```
+
+
+Now the mstate model with a covariate: 
+```{r mstate-major}
+fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ MAJOR,
+               data = d) %>% tidy()
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```
+
+Normalize by state (because we care about the competing risk within each state.)
+
+```{r mstate-major-percent}
+fit %<>% 
+  group_by(Transition, strata) %>% 
+  mutate(max = max(estimate)) %>% 
+  ungroup() %>% 
+  group_by(from, time, strata) %>% 
+  mutate(estimate = estimate/(sum(max))) %>%
+  mutate(max = max/sum(max)) %>% 
+  ungroup()
+
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```   
+
+
+
+
+
+
+
+
+
+---
+
+
+
+Now we use `msfit()` to extract transition probabilities and fitted values (hazards).
+
+QUESTION: 
+What is the relationship between transition probabilities and cumulative incidence?
+
+```{r probtrans}
+# MODEL WITH NO COVARIATES 
+d$trans <-d$transition
+mod.1 <- coxph(Surv(time, status) ~ strata(trans), data = d, method = "breslow")
+
+# # Extract fitted values
+fit <- msfit(mod.1, trans=tmat)
+
+# Extract transition probabilities from each state
+# pred = # A positive number indicating the prediction time--the time at which the prediction is made
+pt0 <- probtrans(fit,  predt = 1) 
+
+# tidy the mstate object
+trans <- as.data.frame(pt0[[5]]) # transition matrix
+p <- pt0[[1]] # estimate matrix
+p$from <- paste(1, names(trans)[1]) # names from transition matrix
+for(i in 2:length(events)){
+  pt <- pt0[[i]]
+  pt$from <- paste(i, names(trans)[i])
+  p <- rbind(p, pt)
+}
+
+# p$pstate2[which(p$from == "1 Initiated")] <- p$pstate2[which(p$from == "1 Initiated")] + p$pstate1[which(p$from == "2 NPRM")] + 
+#   p$pstate3[which(p$from == "2 NPRM")] + 
+#   p$pstate4[which(p$from == "2 NPRM")]
+
+# melt into one observation per transition per time
+p %<>% melt(id = c("time", "from"), value.name = "Probability")
+
+# separate state from variable (estimate, error) name
+p %<>% separate(variable, into = c("variable", "to"), sep = "e") %>%
+  # spread estimates and errors into two variables
+  spread(key = "variable", value = "Probability") %>%
+  # name estimate and error variables
+  rename(estimate = pstat, std.error = s)
+
+# name transitions
+p$to %<>% as.factor()
+p$from %<>% as.factor()
+levels(p$to) <- levels(p$from)
+
+
+p %<>% 
+  mutate(from = factor(paste("At state", from))) %>% 
+  mutate(to = factor(paste("next state =", to))) %>%
+  mutate(Transition = paste(from, to, sep = ", ")) 
+
+
+# plot
+p %>% filter(time <3650, !estimate %in% c(0,1) ) %>% 
+  ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Transition probability
+from Aalen-Johansen estimator") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```
+
+QUESTION: 
+`msfit` `probtrans()` with covariate does not work without `newdata` argument?
+
+The model is nearly identical to the one above:
+
+`mod.1 <- coxph(Surv(time, status) ~ MAJOR + strata(trans), data = d, method = "breslow")`
+
+But extracting fitted values requires "newdata" - why? - documentation does not say.
+
+`fit <- msfit(mod.1, trans=tmat)`
+
+---
+
+Hazard rates stratified by transition from the `mstate` package:
+
 ```{r clean-for-2stage-4trans-model}
+# NOTE THIS IS CHUNK IS OLD CODE WRITTEN SPECIFICALLY FOR THIS CASE
+# Thus, it has different variable name than above.  
+
 # select vars for minimal model 
 d <- select(dotStage, DOTdate, RIN, STAGE, initiated, DaysUntilNPRM, DaysUntilFinalRule, DaysUntilWithdrawal) %>%
   # select minimal stages
@@ -354,14 +647,6 @@ d %<>% mutate(DaysUntilWithdrawal = ifelse(is.na(DaysUntilWithdrawal) & STAGE ==
 # identify previous stages in the data (need to use previous stage var to supplement this)
 d %<>% group_by(RIN) %>%
   mutate(stages = paste(STAGE, collapse = ";")) %>% ungroup() 
-
-# head(d$stages)
-# unique(d$stages)
-
-# FIXME
-
-# NEED TO INDEX TRANSITIONS 
-# e.g. trans Initiated to NPRM = 1, Straight to final = 2, NPRM withdrawal = 3,  NPRM published to FINAL published = 4
 
 d$trans <- NA
 # to proposed rule = trans 1 
@@ -407,11 +692,9 @@ d %<>% filter(exit > entry) # FIXME
 
 # ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariats that have values for those non-transition months?
 d$status <- 1
-```
+```   
 
-In estimation, a multi-stage cox hazard model is a cox hazard model stratified by transition.
 
-Click on "Code" to see model -> 
 ```{r model-2stage-4trans}
 # MODEL WITH NO COVARIATES 
 mod.1 <- coxph(Surv(entry, exit, status) ~ strata(trans), data = d, method = "breslow")
@@ -439,18 +722,20 @@ f$trans %<>% {gsub(4, "NPRM to Final", .)}
 names(f) <- c("Days", "Hazard", "Transition", "Stage")
 ```
 
-Plot hazard rates (the probability that a rule at a given stage hits a each possible transition after so many days at that stage) for simple 2-stage, 4-transition model:
+
 ```{r model-1}
 # plot
 ggplot(f) +
   geom_line(aes(x = Days, y = Hazard, color = Transition)) + 
   facet_grid(. ~ Stage) + 
-  theme_minimal()
+  theme_bw()
 ``` 
 
-However, there are more possible transitions. Here are the most common patterns: 
+ 
 
-```{r most-common-transitions, include=F}
+```{r most-common-transitions, include=F, eval=FALSE}
+# However, there are more possible transitions. Here are the most common patterns:
+  
 # identify previous stages in the data (need to use previous stage var to supplement this)
 # lots of obs have "completed actions as the stage; hoping we can do better; this is not what we wanted to get from UA/ORIA data"
 dotStage %>%
@@ -467,8 +752,9 @@ dotStage %>%
   kable() #%>% kable_styling()
 ```
 
-And without "Undetermined" status:
-```{r most-common-transitions-named, include=FALSE}
+```{r most-common-transitions-named, include=FALSE, eval=FALSE}
+# And without "Undetermined" status:
+
 # identify previous stages in the data (need to use previous stage var to supplement this)
 # lots of obs have "completed actions as the stage; hoping we can do better; this is not what we wanted to get from UA/ORIA data"
 dotStage %>%
@@ -485,161 +771,18 @@ dotStage %>%
   kable() #%>% kable_styling()
 ```
 
-## Adding covariates
 
-```{r model-2}
-# move to merge 
-dotRIN %<>% mutate(Same_President = ifelse(initiated>as.Date(2009-01-01) & enddate<as.Date(2017-01-01), "Yes", "No")) 
-dotRIN %<>% mutate(Same_President = ifelse(is.na(Same_President), "No", Same_President))
-dotRIN %<>% mutate(MAJOR = ifelse(MAJOR == "Undetermined", "No", MAJOR))
-
-############################
-# Here we take event data with rows indexed by ID and columns for relevent dates and covariates.
-# The method takes date variables, melts the data to identify the order in which various transitions occur, and, finally, models transitions in and out of each stage as a multi-state survival model. 
-# THis is a slightly more generic approach than the mstate package vinettes as it does not require one to specifiy which transitions are possible or actually present in the data. Instead, the transition matrix is derived from the data.
-# It also attempts to keep data in a tidy format (rather than special class objects). 
-
-# First we identify the order in which events occured in order to identify different types of transitions. 
-
-# STEP 1: IDENTIFY TRANSITIONS AND DATES 
-
-# These data start as one observation per ID (in this case, "RIN")
-# Every observation must have a start date (here the date the rulemaking project was "initiated").
-d <- filter(dotRIN, !is.na(initiated)) 
-
-# We split out transitions observed for each ID (We will merge back in with covariates later.)
-# Select the events we want to model:
-d %<>% select(RIN, initiated, NPRMpublished, FinalRulePublished, WithdrawalPublished)
-
-# Melt data to be one observation per event
-d %<>% 
-  melt(id = "RIN", na.rm = T, value.name = "transition_date") %>% 
-  distinct()
-
-# Convert dates to strings for now to make things easier (specifically, the super-useful mutate(ifelse()) method). 
-d$transition_date %<>% as.character()
-# Group by RIN and identify sequence
-d %<>% 
-  group_by(RIN) %>% 
-  arrange(transition_date) %>% 
-  rename(event = variable) %>%
-  mutate(transitions = paste(event, collapse = " to ")) 
-
-# Parse transitions from sequence (could be made more general?)
-# FIXME
-d %<>% 
-  mutate(trans1 = str_match(transitions, "([A-z]*? to [A-z]*){1}")[1] ) %>% 
-  mutate(trans2 = str_match(transitions, "([A-z]*? to [A-z]*){2}")[1] ) %>%
-  mutate(trans2 = str_replace(trans2, "(.*? to ){1}", "") ) %>%
-  mutate(trans3 = str_match(transitions, "([A-z]*? to [A-z]*){3}")[1] ) %>%
-  mutate(trans3 = str_replace(trans3, "(.*? to ){2}", "") )
-
-d %<>%  select(-transitions) 
-
-d %<>% melt(id = c("RIN", "event", "transition_date"), na.rm = T, value.name = "transition") %>% 
-  rename(transition_count = variable)
-
-d %<>% 
-  group_by(RIN, transition) %>% 
-  mutate(exit_date = ifelse(event == gsub(".* to ", "", transition),
-                            transition_date, NA)) %>% 
-  mutate(exit_date = paste(unique(na.omit(exit_date)), collapse = ";")) %>%
-  mutate(entry_date = ifelse(event == gsub(" to .*", "", transition),
-                            transition_date, NA)) %>% 
-  mutate(entry_date = paste(unique(na.omit(entry_date)), collapse = ";"))
-
-# Now that we have identified transitions and the entry and exit dates, we no longer need the `event` and `transition_date` variables 
-# However, we will need the event names later, so we save them
-events <- as.character(unique(d$event))
-d %<>% select(-event, -transition_date) %>% distinct()
-
-
-
-# STEP 2: MERGE BACK WITH DATA
-
-d %<>% left_join(dotRIN) %>% ungroup() %>% arrange(RIN) 
-
-# Count days until event with `difftime()`
-d %<>% 
-  mutate(exit = difftime(exit_date, initiated, units="days") ) %>% 
-  mutate(entry = difftime(entry_date, initiated, units="days") ) 
-
-# Days until initiated is obviously 0, but difftime has odd rounding, so let us fix that:
-d$entry[grepl("^init", d$transition)] <- 0
-  
-##########################################################
-# INDEX TRANSITIONS 
-d$transition %<>% as.factor()
-
-d %<>% mutate(trans = factor(transition) ) %>% 
-  mutate(trans = factor(trans, levels = rev(levels(trans))))
-
-# See the levels before converting them to numbers
-trans <- tlevels <- levels(d$trans)
-# events
-
-# Possible transitions from state i
-for(i in 1:length(events)){
-  trans <- gsub(events[i], i, trans)
-}
-
-# Make a matrix of from and to
-trans <- str_split(trans, " to ", simplify = TRUE)
-
-# Use the matrix to populate the list for the transMat()
-from <- list()
-for(i in 1:length(events)){
-  from[[i]] <- as.numeric(trans[which(trans[,1]==i),2])
-}
-
-# Transition Matrix
-tmat <- transMat(from, 
-                 names = events)
-
-
-# NOTE THERE ARE SOME ERRORS (at least one left) THAT MAY NEED TO BE INVESTIGATED IF THEY PERSIST AFTER PROPER CODING OF TRANSITIONS 
-d %<>% filter(exit > entry) # FIXME
-
-# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariats that have values for those non-transition months?
-d$status <- 1
-# ```
-
-# In estimation, the multi-stage cox hazard model is a cox hazard model stratified by transition. 
-library(broom)
-
-fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(trans), data = d)
-# summary(fit)
-# tidy(fit) 
-tidyfit <- fit %>% 
-  tidy() %>%
-  separate(strata, c("Major", "strata"), ", ") %>% 
-  #filter(estimate > 0) %>%
-  filter(time<3650) %>%
-  mutate(strata = gsub(".*=|published|Published| *$","", strata) ) %>%
-  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
-  mutate(from = factor(from, levels = rev(levels(from)))) %>%
-  mutate(to = gsub(".*=|.* to ","to ", strata) ) # %>% 
-
-ggplot(tidyfit, aes(time/365, estimate)) + 
-  geom_line(aes(color = Major)) +
-  scale_x_continuous(breaks = seq(0,10, by = 1)) +
-  geom_point(aes(color = Major), shape = "+") + 
-  geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
-  facet_grid(to~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM Probability that transition will take longer than t")
-
-```
 ---
 
 
 
 ## Covariates
 
-#### Covariates: 
-
 [Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
 
-Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. We may need to cluster standard errors by rule or agency depending on the covariates.
+Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. Many vary by month or year. We will include a frailty by rule, and may need cluster standard errors by rule or agency depending on the covariates.
+
+Many covariates may be correlated and we really should be modeling them as indicators of the latent factors that affect policymaking. For example, observerved covariates may be grouped into broader, more descrete concepts like the resources the agency has, the technical complexity of the rule, and the political contentiousness of the rule.
 
 ##### Resources 
 Resources measures:
@@ -760,7 +903,7 @@ decision which carries both technology and cost implications.
 
 # Notes
 
-#### DOT - Unified Agenda rule stage crosswalk
+#### DOT Report - Unified Agenda crosswalk
 
 List of unique rule stages and how we code each (Note /2 means the second such document for the same RIN):
 

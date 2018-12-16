@@ -888,6 +888,7 @@ dot %<>%
 
 # More variables
 dot %<>% mutate(MAJOR = ifelse(MAJOR == "Undetermined", "No", MAJOR))
+dot %<>% mutate(MAJOR = ifelse(is.na(MAJOR), "No", MAJOR))
 dot %<>% mutate(Initiated = initiated)
 
 
