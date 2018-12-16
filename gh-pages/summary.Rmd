@@ -425,8 +425,8 @@ ggplot(aes(x = time/365, estimate)) +
 
 Now using the multi-state method:
 
-QUESTION: 
-I am not yet clear on exactly how type = "mstate" is different. 
+### Question: I am not yet clear on exactly how type = "mstate" is different. 
+
 Furthermore, these CIFs do not look right. I know there are more rules that go straight to the Final Rule stage than to Withdrawal, but survfit apprears to drop this transition. Why?
 
 ```{r mstate}
@@ -558,8 +558,9 @@ fit %>% filter(time < 3650) %>%
 
 Now we use `msfit()` to extract transition probabilities and fitted values (hazards).
 
-QUESTION: 
-What is the relationship between transition probabilities and cumulative incidence?
+### Question: What is the relationship between transition probabilities and cumulative incidence?
+
+NOTE: this plot is backwards because `msfit()` and `probtrans` mess up the factor levels of the `transition` variable and I need to retain those new levels to match the to and from states. 
 
 ```{r probtrans}
 # MODEL WITH NO COVARIATES 
@@ -624,14 +625,13 @@ from Aalen-Johansen estimator") +
   theme_bw()
 ```
 
-QUESTION: 
-`msfit` `probtrans()` with covariate does not work without `newdata` argument?
+### Question: Why does `msfit` `probtrans()` with covariates require a `newdata` argument?
 
 The model is nearly identical to the one above:
 
 `mod.1 <- coxph(Surv(time, status) ~ MAJOR + strata(trans), data = d, method = "breslow")`
 
-But extracting fitted values requires "newdata" - why? - documentation does not say.
+But extracting fitted values requires "newdata"---why? The documentation does not say.
 
 `fit <- msfit(mod.1, trans=tmat)`
 
