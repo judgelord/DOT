@@ -7,7 +7,9 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-source("setup.R")
+if(require(here)){install.packages("here", repos = "https://cloud.r-project.org/")}
+library(here)
+source(here("setup.R"))
 
 # ABSTRACT NOTES
 # https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
@@ -217,45 +219,46 @@ dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
 
 We are interested in two kinds of outcomes: (1) what happens? and (2) how long does it take?
 
-Given these questions and the timeseries nature of data (montly status reports with changing covariate values), we use duration models. Because we are interested in how policies may move through multiple stages of the policymaking process, we use a multi-state model. Doing so allows us to simultaniously model how different factors may affect a policy at different stages, while also modeling a common fraility across rules. We could model each stage seperately, but this would overlook correlation within rules across stages. 
+Given these questions and the time-series nature of our data (monthly status reports with changing covariate values), we use duration models. Because we are interested in how policies may move through multiple stages of the policymaking process, we use a multi-state model. Doing so allows us to simultaneously model how different factors may affect a policy at different stages (i.e. states), while also modeling a common frailty. We could model each stage separately, but this would ignore correlation within rules across stages. 
 
 Two interpretable statistics address each of our main questions. 
 
-First, we estimate "transition probabilities" (i.e. the probablity that a policy will advance to each possible future state at a given time) using the from Aalen-Johansen estimator, also known as the cumulative incidence function (the function estimating the number of observations that have transitioned to and from each state over time). 
-Second, we estimate the probability that a given transition will occur in a given time window using the Kaplan-Meier estimator. Covariates may increase or decrease the liklihood that a given transition will occur, thus increaseing or decreasing the estimated rate, $\lambda$, of advancing from a given stage to a given stage in the policymaking process, and thus the Kaplan-Meier estimate that a given transition will occur after a given date. 
+First, we estimate "transition probabilities" (i.e. the probability that a policy will advance to each possible future state at a given time) using the Aalen-Johansen estimator and the cumulative incidence function (the function estimating the number of observations that have transitioned to and from each state over time). 
 
-To capture common elements of each rule, we use a penalised likelihood a random effects---a [frailty](https://www.rdocumentation.org/packages/survival/versions/2.11-4/topics/frailty) model---with frailties for each rulemaking project (each Regultory Identification Number). 
+Second, we estimate the probability that a given transition will occur in a given time window using the Kaplan-Meier estimator. Covariates may increase or decrease the likelihood that a given transition will occur, thus increasing or decreasing the estimated rate of advancing from a given stage to a given stage in the policymaking process, and thus the Kaplan-Meier estimate that a given transition will occur after a given date. 
 
-The paper that is most similar to the analysis we aim to conduct is ["Surviving Phases: Introducing Multi-state Survival Models"](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Metzger-and-Jones-Surviving-Phases-VIM-07MAY15rev%20(1).pdf) by Metziger and Jones in Poltical Analysis. I have not yet found their [replication materials](https://github.com/judgelord/DOT/tree/master/surviving_phases_dataverse) to be very helpful, but their [appendix](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Jones%20and%20Metzger%2C%20Appendices.pdf) has some useful illustrations.
+To capture common elements of each rule, we use a penalized likelihood a random effects---a [frailty](https://www.rdocumentation.org/packages/survival/versions/2.11-4/topics/frailty) model---with frailties for each rulemaking project (each Regulatory Identification Number). 
 
-We use [mstate](https://www.jstatsoft.org/article/view/v038i07), an R package has been developed for multi-state duration modeling. Unfortunatly, the [vignette](https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf) does not use tidy data and is not the most helpful. Other R packages that could be relevent are `TPmsm` which also estimates transition probabilities. 
+The paper that is most similar to the analysis we aim to conduct is ["Surviving Phases: Introducing Multi-state Survival Models"](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Metzger-and-Jones-Surviving-Phases-VIM-07MAY15rev%20(1).pdf) by Metzger and Jones in Political Analysis. I have not yet found their [replication materials](https://github.com/judgelord/DOT/tree/master/surviving_phases_dataverse) to be very helpful, but their [appendix](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Jones%20and%20Metzger%2C%20Appendices.pdf) has some useful illustrations.
 
-There is a useful [multi-state and competing risk vignette](https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf) on cran. 
+We use `mstate`, an R package has been developed for multi-state duration modeling. Unfortunately, the [vignette](https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf) does not use tidy data and is not the most helpful. Other R packages that could be relevant are `TPmsm` which also estimates transition probabilities. 
 
-rpubs has a useful [review of survival analysis](https://rpubs.com/alecri/258589).
+The JSS article [introducing mstate](https://www.jstatsoft.org/article/view/v038i07) and the [multi-state and competing risk vignette](https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf) are helpful. 
 
-There are several ggplot wrappers for plotting survival objects, including [ggsurvplot](https://rpubs.com/alecri/258589) and [survminer](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf), but I opt to skip the wrappers and use tidy data.
+Rpubs also has a useful [review of survival analysis](https://rpubs.com/alecri/258589).
 
-The `tidy()` function from the `broom` package converts `survfit` objects into tidy dataframes via [tidy.survit](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit). Unfortunatly, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. Once I better understand the relationship between KM estimates, Cumulative Incidnece Functions, and transition probabilities, I may be about to bypass the `mstate` package. The inconsistancy in naming and structure of various survival analysis objects is very annoying.
+There are several ggplot wrappers for plotting survival objects, including [ggsurvplot](https://rpubs.com/alecri/258589) and [survminer](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf), and `ggfortify` allows `survfit` to be used by `autoplot()`, but I opt to skip the wrappers and use tidy data.
+
+The `tidy()` function from the `broom` package converts `survfit` objects into tidy data frames (see [tidy.survfit documentation](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit)). Unfortunately, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may be about to bypass the `mstate` package. The inconsistency in naming and structure of various survival analysis objects is very annoying.
 
 
 ## Core Model
 First, we model the most common stages that rules go through with no covariates, only the dates of transition in and out of the pre-NPRM and NPRM stages. We use the DOT data with one observation per rule per stage.
 
-Formatting data for multi-stage duration modeling requires identifying the dates of transitions to and from each stage. To do this we must define and index a set of transitions of interest. The data are formatted as one observation per rule per transition. The key variable is the days since the rulemaking project was initiated at which that transition occured. 
+Formatting data for multi-stage duration modeling requires identifying the dates of transitions to and from each stage. To do this we must define and index a set of transitions of interest. The data are formatted as one observation per rule per transition. The key variable is the days since the rulemaking project was initiated at which that transition occurred. 
 
 ```{r prepdata}
 # PREP DATA ###########################
-# Here we take event data with rows indexed by ID and columns for relevent dates and covariates.
+# Here we take event data with rows indexed by ID and columns for relevant dates and covariates.
 # The method takes date variables, melts the data to identify the order in which various transitions occur, and, finally, models transitions in and out of each stage as a multi-state survival model. 
-# THis is a slightly more generic approach than the mstate package vinettes as it does not require one to specifiy which transitions are possible or actually present in the data. Instead, the transition matrix is derived from the data.
+# This is a more generic approach than the mstate package vignettes as it does not require one to specify which transitions are possible or actually present in the data. Instead, I derive the transition matrix from the data.
 # It also attempts to keep data in a tidy format (rather than special class objects). 
 
-# First we identify the order in which events occured in order to identify different types of transitions. 
+# First we identify the order in which events occurred in order to identify different types of transitions. 
 
 # STEP 1: IDENTIFY TRANSITIONS AND DATES 
 
-# These data start as one observation per ID (in this case, "RIN"). I will be extending this approach to data frames of montly observations for each RIN
+# These data start as one observation per ID (in this case, "RIN"). I will be extending this approach to data frames of monthly observations for each RIN
 load(here("data/DOT-perRule.Rdata"))
 
 # First, identify an ID variable so that we can split out transitions observed for each ID 
@@ -357,7 +360,7 @@ tmat <- transMat(from, names = events)
 
 
 
-# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariats that have values for those non-transition months?
+# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariates that have values for those non-transition months?
 d$status <- 1
 ```
 
@@ -366,7 +369,12 @@ In estimation, the multi-stage duration model is stratified by transition.
 Simple example:
 `fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)`
 
-`autoplot(fit) # km estimate per strata`
+`autoplot(fit)` will quickly plot km estimate per strata with the `ggfortify` package.
+```{r autoplot}
+fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)
+autoplot(fit)
+```
+
 
 
 Now with tidy data:
@@ -387,7 +395,8 @@ fit %>%   #filter(estimate > 0) %>%
   geom_point(shape = "+") + 
   geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=.25) + 
   facet_grid(to ~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM probability transition takes longer than t")
+  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
+  theme_bw()
 ```    
 
 Now with tidy data and a covariate:
@@ -410,10 +419,15 @@ ggplot(aes(x = time/365, estimate)) +
   geom_point(aes(color = Major), shape = "+") + 
   geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
   facet_grid(to ~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM probability transition takes longer than t")
+  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
+  theme_bw()
 ```    
 
-Now using the multi-state method (I am not yet clear on exactly how type = "mstate" is different):
+Now using the multi-state method:
+
+QUESTION: 
+I am not yet clear on exactly how type = "mstate" is different. 
+Furthermore, these CIFs do not look right. I know there are more rules that go straight to the Final Rule stage than to Withdrawal, but survfit apprears to drop this transition. Why?
 
 ```{r mstate}
 # Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?
@@ -590,9 +604,9 @@ levels(p$to) <- levels(p$from)
 
 
 p %<>% 
+  mutate(Transition = paste0("Pr(",to,"|",from,")")) %>%
   mutate(from = factor(paste("At state", from))) %>% 
-  mutate(to = factor(paste("next state =", to))) %>%
-  mutate(Transition = paste(from, to, sep = ", ")) 
+  mutate(to = factor(paste("Pr ", to))) 
 
 
 # plot
@@ -605,8 +619,8 @@ p %>% filter(time <3650, !estimate %in% c(0,1) ) %>%
   #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
   labs(x = "Years" , y = "Transition probability
 from Aalen-Johansen estimator") +
-  facet_grid(. ~ from) + # for comparing states without covariates 
-  #facet_grid(to ~ from) + # for comparing covariates within states
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
   theme_bw()
 ```
 
@@ -627,7 +641,7 @@ Hazard rates stratified by transition from the `mstate` package:
 
 ```{r clean-for-2stage-4trans-model}
 # NOTE THIS IS CHUNK IS OLD CODE WRITTEN SPECIFICALLY FOR THIS CASE
-# Thus, it has different variable name than above.  
+# Thus, it has a different variable name than above.  
 
 # select vars for minimal model 
 d <- select(dotStage, DOTdate, RIN, STAGE, initiated, DaysUntilNPRM, DaysUntilFinalRule, DaysUntilWithdrawal) %>%
@@ -663,8 +677,8 @@ d$trans[grepl("Proposed Rule;Final Rule", d$stages) & d$STAGE == "Final Rule"] <
 
 # Transition Matrix 
 tmat <- transMat(list(c(2, 4), #transitions from prerule
-                      c(3,4), 		 		  #transitions from nprm
-                      c(), 		 		  #transitions from withdrawal
+                      c(3,4),                    #transitions from nprm
+                      c(),                    #transitions from withdrawal
                       c()),        # trans from final 
                  names = c("preNPRM", "NPRM", "Withdrawal", "Final"))
 
@@ -690,7 +704,7 @@ d %<>% mutate(exit = ifelse(trans %in% c(1), DaysUntilNPRM, exit))
 # NOTE THERE ARE SOME ERRORS THAT MAY NEED TO BE INVESTIGATED IF THEY PERSIST AFTER PROPER CODING OF TRANSITIONS 
 d %<>% filter(exit > entry) # FIXME
 
-# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariats that have values for those non-transition months?
+# ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariates that have values for those non-transition months?
 d$status <- 1
 ```   
 
@@ -780,16 +794,16 @@ dotStage %>%
 
 [Google spreadsheet of variables](https://docs.google.com/spreadsheets/d/1CptLu6Xz7K14KF8PyELsiy-siYZHpi5jjmS9hMyO1xM/edit?usp=sharing)
 
-Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. Many vary by month or year. We will include a frailty by rule, and may need cluster standard errors by rule or agency depending on the covariates.
+Some are measured at the rule level, others at the agency level, and others for all rules at a given point in time. Many vary by month or year. We will include a frailty by rule and may need cluster standard errors by rule or agency depending on the covariates.
 
-Many covariates may be correlated and we really should be modeling them as indicators of the latent factors that affect policymaking. For example, observerved covariates may be grouped into broader, more descrete concepts like the resources the agency has, the technical complexity of the rule, and the political contentiousness of the rule.
+Many covariates may be correlated and we really should be modeling them as indicators of the latent factors that affect policymaking. For example, observed covariates may be grouped into broader, more discrete concepts like the resources the agency has, the technical complexity of the rule, and the political contentiousness of the rule.
 
 ##### Resources 
 Resources measures:
 
 - sub-agency budget? - can we get the budget for rulemaking activities? Is this different than estimating SES? 
 
-- "lack of resources" or "lack of staffing" claimed [0,1], subset of delayed rules
+- "lack of resources" or "lack of staffing" claimed [0,1], a subset of delayed rules
 
 - number of SES / # of rules per year (ideally at sub-agency level if we have SES data for that)
 
@@ -809,7 +823,7 @@ Complexity measurements:
 
 - "coordination necessary" claimed [0,1], subset of delayed rules
 
-- “unanticipated issues/impacts requiring further analysis”*“awaiting development of additional data” claimed [0,1], subset of delayed rules
+- “unanticipated issues/impacts requiring further analysis”*“awaiting development of additional data” claimed [0,1], a subset of delayed rules
 
 - the score of the abstract on Benoit's political sophistication/complexity
 
@@ -895,8 +909,7 @@ necessary to support substantial investments.
 
 NEGATIVE:
 
-The Committee is concerned by the FAA's decision to 
-extend by five years its aging Mission Support Network, a 
+The Committee is concerned by the FAA's decision to extend by five years its aging Mission Support Network, a 
 decision which carries both technology and cost implications. 
 
 
@@ -926,9 +939,5 @@ List of unique rule stages and how we code each (Note /2 means the second such d
 [17] "Request for Comments" = Other                
 [18] "Final Rule with Request for Comments" = Final Rule
 [19] "Termination"  = Termination (sometimes folded into Withdrawal)
-
-
-
----
 
 
