@@ -19,10 +19,7 @@ dotStage %<>% filter(!is.na(initiated)) # select rule-stage observations with a 
 load(here("data/DOT-perRule.Rdata"))
 dotRIN %<>% filter(!is.na(initiated)) # select rule observations with a dot report
 # move to merge 
-dotRIN %<>% mutate(Same_President = ifelse(initiated>as.Date(2009-01-01) & enddate<as.Date(20017-01-01), "Yes", "No")) 
-dotRIN %<>% mutate(Same_President = ifelse(is.na(Same_President), "No", Same_President))
-dotRIN %<>% mutate(MAJOR = ifelse(MAJOR == "Undetermined", "No", MAJOR))
-dotRIN %<>% rename(Initiated = initiated)
+
                    
 # Every observation must have a start date (here the date the rulemaking project was "initiated").
 d <- original <- rename(dotRIN, id = RIN)
@@ -74,10 +71,12 @@ d %<>% melt(id = c("id", "event", "transition_date"), na.rm = T, value.name = "t
 d %<>% 
   group_by(id, transition) %>% 
   mutate(exit_date = ifelse(event == gsub(".* to ", "", transition),
-                            transition_date, NA)) %>% 
+                            transition_date, 
+                            NA)) %>% 
   mutate(exit_date = max(na.omit(exit_date))) %>%
   mutate(entry_date = ifelse(event == gsub(" to .*", "", transition),
-                            transition_date, NA)) %>% 
+                            transition_date, 
+                            NA)) %>% 
   mutate(entry_date = max(na.omit(entry_date) ) )
 
 # Now that we have identified transitions and the entry and exit dates, we no longer need the `event` and `transition_date` variables 
@@ -86,9 +85,7 @@ events <- as.character(unique(d$event))
 d %<>% select(-event, -transition_date) %>% distinct()
 
 
-
 # STEP 2: MERGE BACK WITH DATA
-
 d %<>% left_join(original) %>% ungroup() %>% arrange(id) 
 
 # Count days until event with `difftime()`
@@ -97,7 +94,7 @@ d %<>%
   mutate(entry = as.numeric(difftime(entry_date, Initiated, units="days") ) ) 
 
 # Days until initiated is obviously 0, but difftime has odd rounding, so let us fix that:
-d$entry[grepl("^init", d$transition)] <- 0
+d$entry[grepl("^Init", d$transition)] <- 0
 
 # NOTE THERE ARE SOME ERRORS IN THESE DATA (at least one left) THAT MAY NEED TO BE INVESTIGATED IF THEY PERSIST AFTER PROPER CODING OF TRANSITIONS 
 d %<>% filter(exit > entry) # FIXME
@@ -148,16 +145,32 @@ d$status <- 1
 fit <- survfit(Surv(entry, exit, status) ~ strata(trans), data = d)
 # ggfortify allows autoplotting of suvfit objects
 autoplot(fit) # km estimate per strata
-autoplot(fit, fun = 'event') # cumulative incidents per strata
+# autoplot(fit, fun = 'event') # cumulative incidents per strata
 
 # Survminer also easy, but options are limited without a tidy object
 ggsurvplot(fit, data = d, fun = "event") 
 
 # Now with tidy data
+fit <- survfit(Surv(entry, exit, status) ~  strata(transition), data = d) %>%
+  tidy() 
 
+fit %<>% # clean up text 
+  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
+
+fit %>%   #filter(estimate > 0) %>%
+  filter(time<3650) %>% # limit to 10 year timeframe
+  ggplot(aes(x = time/365, estimate)) + 
+  geom_line() +
+  scale_x_continuous(breaks = seq(0,10, by = 1)) +
+  geom_point(shape = "+") + 
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=.25) + 
+  facet_grid(to ~ from, scales = "free_x") + 
+  labs(x = "Years" , y = "KM probability transition takes longer than t")
 
 # Now with tidy data and covariates
-fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(trans), data = d) %>%
+fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(transition), data = d) %>%
   tidy() 
 
 fit %<>%
@@ -165,8 +178,8 @@ fit %<>%
   #filter(estimate > 0) %>%
   filter(time<3650) %>% # limit to 10 year timeframe
   mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
-  mutate(from = factor(from, levels = rev(levels(from)))) %>%
-  mutate(to = gsub(".*=|.* to ","to ", strata) ) 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
 
 fit %>% 
 ggplot(aes(x = time/365, estimate)) + 
@@ -175,8 +188,10 @@ ggplot(aes(x = time/365, estimate)) +
   geom_point(aes(color = Major), shape = "+") + 
   geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
   facet_grid(to ~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM Probability each transition takes longer than t")
+  labs(x = "Years" , y = "KM probability transition takes longer than t")
 
+
+################################################# REDUNDENT 
 #######################################
 # Cumulative incidence for each state #
 #######################################
@@ -217,22 +232,19 @@ ggplot(fit, aes(x = time/365)) +
               ymin = CI - 1.96*seCI, 
               fill = Transition),
               alpha = .2) + 
-  labs(x = "Years" , y = "Transition probability
-from Aalen-Johansen estimator
-(i.e. Cumulative Incidence Function)") +
+  labs(x = "Years" , y = "Cumulative Incidence Function") +
   facet_grid(. ~ from) + # for comparing states without covariates 
   #facet_grid(to ~ from) + # for comparing covariates within states
   theme_bw()
-  
+################################################# /REDUNDENT 
 
 
 
 
 
+# Now using the multi-state package
 
-# FOR THE CASE WHERE DATA ARE ONLY TRANSITIONS (i.e. status ==1), THIS IS THE SAME AS ABOVE, but does not retain state names.
-# However, this will be needed to add non-event time observations 
-# multi-state
+# Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?
 fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ 1,
                  data = d) %>% tidy()
 
@@ -271,20 +283,72 @@ fit %<>%
 
 
 # plot
-fit %>% 
+fit %>% filter(time < 3650) %>% 
 ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
   geom_step(aes(y = estimate)) +
   geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
                   ymin = estimate - 1.96*std.error),
               alpha = .2, color = NA) + 
   geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
-  labs(x = "Years" , y = "Transition probability
-from Aalen-Johansen estimator
-(i.e. Cumulative Incidence Function)") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
   facet_grid(. ~ from) + # for comparing states without covariates 
   #facet_grid(to ~ from) + # for comparing covariates within states
   theme_bw()
 
+
+
+# Now mstate with covariates 
+fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ MAJOR,
+               data = d) %>% tidy()
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+
+# Normalize by state (because we care about the competing risk within each state.)
+fit %<>% 
+  group_by(Transition, strata) %>% 
+  mutate(max = max(estimate)) %>% 
+  ungroup() %>% 
+  group_by(from, time) %>% 
+  mutate(estimate = estimate/(sum(max))) %>%
+  mutate(max = max/sum(max)) %>% 
+  ungroup()
+
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
 
 
 
@@ -315,7 +379,7 @@ pt0 <- probtrans(fit,  predt = 1)
 
 # tidy the mstate object
 trans <- as.data.frame(pt0[[5]]) # transition matrix
-p <- pt0[[1]] # estimates
+p <- pt0[[1]] # estimate matrix
 p$from <- paste(1, names(trans)[1]) # names from transition matrix
 for(i in 2:length(events)){
   pt <- pt0[[i]]
@@ -323,22 +387,45 @@ for(i in 2:length(events)){
   p <- rbind(p, pt)
 }
 
+# p$pstate2[which(p$from == "1 Initiated")] <- p$pstate2[which(p$from == "1 Initiated")] + p$pstate1[which(p$from == "2 NPRM")] + 
+#   p$pstate3[which(p$from == "2 NPRM")] + 
+#   p$pstate4[which(p$from == "2 NPRM")]
+
+# melt into one observation per transition per time
 p %<>% melt(id = c("time", "from"), value.name = "Probability")
 
-p %<>% separate(variable, into = c("variable", "to"), sep = "e") %>% 
-  mutate(from = factor(paste("at", from))) %>% 
-  mutate(to = factor(paste("to", to))) 
-  
-levels(p$to) <- gsub("at", "to",levels(p$from) )
+# separate state from variable (estimate, error) name
+p %<>% separate(variable, into = c("variable", "to"), sep = "e") %>%
+  # spread estimates and errors into two variables
+  spread(key = "variable", value = "Probability") %>%
+  # name estimate and error variables
+  rename(estimate = pstat, std.error = s)
 
-p %<>% spread(key = "variable", value = "Probability") %>%
-  rename(estimate = pstat, se = s)
+# name transitions
+p$to %<>% as.factor()
+p$from %<>% as.factor()
+levels(p$to) <- levels(p$from)
 
+
+p %<>% 
+  mutate(from = factor(paste("At state", from))) %>% 
+  mutate(to = factor(paste("next state =", to))) %>%
+  mutate(Transition = paste(from, to, sep = ", ")) 
+
+
+# plot
 p %>% filter(time <3650, !estimate %in% c(0,1) ) %>% 
-  ggplot(aes(x = time/365)) + 
-  geom_line(aes(y = estimate)) +
-  facet_grid(to ~ from)
-
+  ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Transition probability
+from Aalen-Johansen estimator") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
 
 
 

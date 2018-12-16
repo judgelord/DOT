@@ -880,10 +880,15 @@ dot$acronym %<>%
   gsub("2139","RITA", .) %>%
   gsub("2135","St Lawernce", .)
 
+
 # Does the RIN have an ANPRM?
 dot %<>%
   ungroup() %>%
   mutate(HasANPRM = ifelse(is.na(dot$ANPRMpublished),0, 1))
+
+# More variables
+dot %<>% mutate(MAJOR = ifelse(MAJOR == "Undetermined", "No", MAJOR))
+dot %<>% mutate(Initiated = initiated)
 
 
 dot %<>% dplyr::select(RIN, docket, agency, acronym, fulltitle, 
