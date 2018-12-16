@@ -317,6 +317,18 @@ dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
 
 # Models
 
+We are interested in two kinds of outcomes: (1) what happens? and(2) how long does it take?
+
+Given these questions and the timeseries nature of data (montly status reports with changing covariate values), we use duration models. Because we are interested in how policies may move through multiple stages of the policymaking process, we use a multi-state model. Doing so allows us to simultaniously model how different factors may affect a policy at different stages, while also modeling a common fraility across rules. We could model each stage seperately, but this would overlook correlation within rules across stages. 
+
+Two interpretable statistics address each of our main questions. 
+
+First, we estimate "transition probabilities" (i.e. the probablity that a policy will advance to each possible future state at a given time) using the from Aalen-Johansen estimator, also known as the cumulative incidence function (the function estimating the number of observations that have transitioned to and from each state over time). 
+
+Second, we estimate the probability that a given transition will occur in a given time window using the Kaplan-Meier estimator. Covariates may increase or decrease the liklihood that a given transition will occur, thus increaseing or decreasing the estimated rate, $\lambda$, of advancing from a given stage to a given stage in the policymaking process, and thus the Kaplan-Meier estimate that a given transition will occur after a given date. 
+
+To capture common elements of each rule, we use a penalised likelihood a random effects (frailty) model, with frailties for each rulemaking project (each Regultory Identification Number). 
+
 
 ## Core Model
 First, we model the most common stages that rules go through with no covariates, only the dates of transition in and out of the pre-NPRM and NPRM stages. We use the DOT data with one observation per rule per stage.
