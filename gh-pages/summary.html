@@ -151,7 +151,7 @@ $(document).ready(function () {
 <li><a href="#models">Models</a><ul>
 <li><a href="#core-model">Core Model</a><ul>
 <li><a href="#statistic-1-transition-probabilities-i.e.which-transition-will-we-see">Statistic 1: Transition probabilities (i.e. which transition will we see?)</a></li>
-<li><a href="#statistic-2-how-long-does-a-given-transition-take">Statistic 2: How long does a given transition take?</a></li>
+<li><a href="#statistic-2-ratecumulative-incidence-how-long-does-a-given-transition-take">Statistic 2: Rate/Cumulative Incidence (How long does a given transition take?)</a></li>
 <li><a href="#how-long-does-a-given-transition-take-by-major-vs.non-major-rules">How long does a given transition take? (by major vs. non-major rules)</a></li>
 </ul></li>
 <li><a href="#covariates">Covariates</a></li>
@@ -565,8 +565,8 @@ from Aalen-Johansen estimator&quot;) +
 <hr />
 </div>
 </div>
-<div id="statistic-2-how-long-does-a-given-transition-take" class="section level3">
-<h3>Statistic 2: How long does a given transition take?</h3>
+<div id="statistic-2-ratecumulative-incidence-how-long-does-a-given-transition-take" class="section level3">
+<h3>Statistic 2: Rate/Cumulative Incidence (How long does a given transition take?)</h3>
 <pre class="r"><code>fit &lt;- survfit(Surv(entry, exit, status * as.numeric(transition), type = &quot;mstate&quot;) ~ strata(transition),
                  data = d) %&gt;% tidy()
 # Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?

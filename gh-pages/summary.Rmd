@@ -463,7 +463,7 @@ But extracting fitted values requires "newdata"---why? The documentation does no
 
 ---
 
-### Statistic 2: How long does a given transition take?
+### Statistic 2: Rate/Cumulative Incidence (How long does a given transition take?)
 
 
 
