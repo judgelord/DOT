@@ -364,187 +364,9 @@ tmat <- transMat(from, names = events)
 d$status <- 1
 ```
 
-In estimation, the multi-stage duration model is stratified by transition. 
+In estimation, the multi-stage duration model is stratified by transition AND fitted per transition. 
 
-Simple example:
-`fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)`
-
-`autoplot(fit)` will quickly plot km estimate per strata with the `ggfortify` package.
-```{r autoplot}
-fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)
-autoplot(fit)
-```
-
-
-
-Now with tidy data:
-```{r survfit}
-fit <- survfit(Surv(entry, exit, status) ~  strata(transition), data = d) %>%
-  tidy() 
-
-fit %<>% # clean up text 
-  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
-  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
-  mutate(to = gsub(" *$","", to) ) 
-
-fit %>%   #filter(estimate > 0) %>%
-  filter(time<3650) %>% # limit to 10 year timeframe
-  ggplot(aes(x = time/365, estimate)) + 
-  geom_line() +
-  scale_x_continuous(breaks = seq(0,10, by = 1)) +
-  geom_point(shape = "+") + 
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=.25) + 
-  facet_grid(to ~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
-  theme_bw()
-```    
-
-Now with tidy data and a covariate:
-```{r survfit-major}
-fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(transition), data = d) %>%
-  tidy() 
-
-fit %<>%
-  separate(strata, c("Major", "strata"), ", ") %>% 
-  #filter(estimate > 0) %>%
-  filter(time<3650) %>% # limit to 10 year timeframe
-  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
-  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
-  mutate(to = gsub(" *$","", to) ) 
-
-fit %>% 
-ggplot(aes(x = time/365, estimate)) + 
-  geom_line(aes(color = Major)) +
-  scale_x_continuous(breaks = seq(0,10, by = 1)) +
-  geom_point(aes(color = Major), shape = "+") + 
-  geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
-  facet_grid(to ~ from, scales = "free_x") + 
-  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
-  theme_bw()
-```    
-
-Now using the multi-state method:
-
-### Question: I am not yet clear on exactly how type = "mstate" is different. 
-
-Furthermore, these CIFs do not look right. I know there are more rules that go straight to the Final Rule stage than to Withdrawal, but survfit apprears to drop this transition. Why?
-
-```{r mstate}
-# Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?
-fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ 1,
-                 data = d) %>% tidy()
-
-# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
-fit$state %<>% as.factor()
-levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
-fit$Transition <- fit$state
-
-# make faceting variables for each current and future state
-fit %<>% 
-  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
-  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
-
-# plot
-fit %>% 
-  ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
-  geom_step(aes(y = estimate)) +
-  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
-                  ymin = estimate - 1.96*std.error),
-              alpha = .2, color = NA) + 
-  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
-  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
-  facet_grid(. ~ from) + # for comparing states without covariates 
-  #facet_grid(to ~ from) + # for comparing covariates within states
-  theme_bw()
-```  
-
-Normalize by state (because we care about the competing risk within each state.)
-
-```{r mstate-percent}
-fit %<>% 
-  group_by(Transition) %>% 
-  mutate(max = max(estimate)) %>% 
-  ungroup() %>% 
-  group_by(from, time) %>% 
-  mutate(estimate = estimate/(sum(max))) %>%
-  mutate(max = max/sum(max)) %>% 
-  ungroup()
-
-
-# plot
-fit %>% filter(time < 3650) %>% 
-ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
-  geom_step(aes(y = estimate)) +
-  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
-                  ymin = estimate - 1.96*std.error),
-              alpha = .2, color = NA) + 
-  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
-  labs(x = "Years" , y = "Cumulative Incidence Function
-       normalized by stage") +
-  facet_grid(. ~ from) + # for comparing states without covariates 
-  #facet_grid(to ~ from) + # for comparing covariates within states
-  theme_bw()
-```
-
-
-Now the mstate model with a covariate: 
-```{r mstate-major}
-fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ MAJOR,
-               data = d) %>% tidy()
-
-# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
-fit$state %<>% as.factor()
-levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
-fit$Transition <- fit$state
-
-# make faceting variables for each current and future state
-fit %<>% 
-  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
-  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
-
-# plot
-fit %>% filter(time < 3650) %>%
-  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
-  geom_step(aes(y = estimate)) +
-  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
-                  ymin = estimate - 1.96*std.error),
-              alpha = .2, color = NA) + 
-  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
-  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
-  #facet_grid(. ~ from) + # for comparing states without covariates 
-  facet_grid(to ~ from) + # for comparing covariates within states
-  theme_bw()
-```
-
-Normalize by state (because we care about the competing risk within each state.)
-
-```{r mstate-major-percent}
-fit %<>% 
-  group_by(Transition, strata) %>% 
-  mutate(max = max(estimate)) %>% 
-  ungroup() %>% 
-  group_by(from, time, strata) %>% 
-  mutate(estimate = estimate/(sum(max))) %>%
-  mutate(max = max/sum(max)) %>% 
-  ungroup()
-
-
-# plot
-fit %>% filter(time < 3650) %>%
-  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
-  geom_step(aes(y = estimate)) +
-  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
-                  ymin = estimate - 1.96*std.error),
-              alpha = .2, color = NA) + 
-  #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
-  labs(x = "Years" , y = "Cumulative Incidence Function
-       normalized by stage") +
-  #facet_grid(. ~ from) + # for comparing states without covariates 
-  facet_grid(to ~ from) + # for comparing covariates within states
-  theme_bw()
-```   
-
-
+To model this, we use the multi-state method. When `Type = "mstate"` the left-hand side is broken out by transition--i.e. instead of predicting overall rate we are predicting the rate per transition, given that the observation is going to see that transition (`strata(transition)` on the right side).
 
 
 
@@ -556,17 +378,20 @@ fit %>% filter(time < 3650) %>%
 
 
 
-Now we use `msfit()` to extract transition probabilities and fitted values (hazards).
+We use `msfit()` to extract transition probabilities and fitted values (hazards).
 
-### Question: What is the relationship between transition probabilities and cumulative incidence?
+### Statistic 1: Transition probabilities (i.e. which transition will we see?)
+#### Question: What is the relationship between transition probabilities and cumulative incidence?
 
 NOTE: this plot is backwards because `msfit()` and `probtrans` mess up the factor levels of the `transition` variable and I need to retain those new levels to match the to and from states. 
 
 ```{r probtrans}
 # MODEL WITH NO COVARIATES 
 d$trans <-d$transition
-mod.1 <- coxph(Surv(time, status) ~ strata(trans), data = d, method = "breslow")
+mod.1 <- coxph(Surv(entry, exit, status) ~ strata(trans), data = d, method = "breslow")
 
+# FIXME
+# msfit from a coxph does not allow multinomial left hand side? wtf?
 # # Extract fitted values
 fit <- msfit(mod.1, trans=tmat)
 
@@ -625,7 +450,7 @@ from Aalen-Johansen estimator") +
   theme_bw()
 ```
 
-### Question: Why does `msfit` `probtrans()` with covariates require a `newdata` argument?
+#### Question: Why does `msfit` `probtrans()` with covariates require a `newdata` argument?
 
 The model is nearly identical to the one above:
 
@@ -635,7 +460,159 @@ But extracting fitted values requires "newdata"---why? The documentation does no
 
 `fit <- msfit(mod.1, trans=tmat)`
 
+
 ---
+
+### Statistic 2: How long does a given transition take?
+
+
+
+```{r mstate}
+fit <- survfit(Surv(entry, exit, status * as.numeric(transition), type = "mstate") ~ strata(transition),
+                 data = d) %>% tidy()
+# Status is now multinomial by trasition. This will help add non-event time observations (i.e. status !=1)?
+
+fit <- survfit(Surv(entry, exit, as.numeric(transition), type = "mstate") ~ strata(transition),
+                 data = d) %>% tidy()
+# FIXME
+fit %<>%   filter(estimate != 0) 
+# why does this fit return 0's for values of x where there are not observations? 
+# maybe these are what is returned when the transitions on the left and right dont match? 
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+# levels(fit$state)
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) # fit$to
+# fit$from
+
+# plot
+fit %>% 
+  ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+    geom_point(aes(y = estimate), shape = "+") +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  ylim(0, 1) + 
+  labs(x = "Years" , y = "Cumulative incidence of each transition") +
+  # note without strata trans, we can get this function parsed by transition, but I am not sure it is right 
+  # labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```  
+
+
+
+```{r mstate-percent, include=FALSE}
+# if we did not include transition strata, and thus modeled the probability for the whole stage, we have probabilities split by transition. This seems intuitive, but they looked wrong and I am not sure they are meaningful, so not including this for now. Sticking to the model where transition is on the left and right side. 
+# Normalize by state (because we care about the competing risk within each state.)
+# 
+# Furthermore, these CIFs do not look right. I know there are more rules that go straight to the Final Rule stage than to Withdrawal, but survfit apprears to drop this transition. Why?
+fit %<>% 
+  group_by(Transition) %>% 
+  mutate(max = max(estimate)) %>% 
+  ungroup() %>% 
+  group_by(from, time) %>% 
+  mutate(estimate = estimate/(sum(max))) %>%
+  mutate(max = max/sum(max)) %>% 
+  ungroup()
+
+
+# plot
+fit %>% filter(time < 3650) %>% 
+ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
+  facet_grid(. ~ from) + # for comparing states without covariates 
+  #facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```
+
+### How long does a given transition take? (by major vs. non-major rules)
+
+Now the mstate model with a covariate: 
+```{r mstate-major}
+fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ MAJOR + strata(transition),
+               data = d) %>% tidy()
+# FIXME
+fit %<>%   filter(estimate != 0) 
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
+# trim srata 
+fit$strata %<>% str_replace(",.*", "") 
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+    geom_point(aes(y = estimate), shape = "+") +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```
+
+
+
+```{r mstate-major-percent, include = FALSE}
+# for the same reasons as above, ommitting this for now 
+# Normalize by state (because we care about the competing risk within each state.)
+fit %<>% 
+  group_by(Transition, strata) %>% 
+  mutate(max = max(estimate)) %>% 
+  ungroup() %>% 
+  group_by(from, time, strata) %>% 
+  mutate(estimate = estimate/(sum(max))) %>%
+  mutate(max = max/sum(max)) %>% 
+  ungroup()
+
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_step(aes(y = estimate)) +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  #geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative Incidence Function
+       normalized by stage") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from) + # for comparing covariates within states
+  theme_bw()
+```   
+
+
+
+
+
+---
+
+#### Instead of cumulative incidence, we can also look at the hazard rate directly: 
 
 Hazard rates stratified by transition from the `mstate` package:
 
@@ -783,7 +760,7 @@ dotStage %>%
   filter(N>4) %>% 
   arrange(-N) %>% 
   kable() #%>% kable_styling()
-```
+``` 
 
 
 ---

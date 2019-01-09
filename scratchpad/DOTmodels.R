@@ -454,6 +454,62 @@ ggplot(f) +
 
 
 
+# these models are wrong because they estimate overall rate, not rate per transition 
+Simple example with no covariates:
+  `fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)`
+
+`autoplot(fit)` will quickly plot km estimate per strata with the `ggfortify` package.
+```{r autoplot}
+fit <- survfit(Surv(entry, exit, status) ~ strata(transition), data = d)
+autoplot(fit)
+```
+
+
+Now with tidy data:
+  ```{r survfit}
+fit <- survfit(Surv(entry, exit, status) ~  strata(transition), data = d) %>%
+  tidy() 
+
+fit %<>% # clean up text 
+  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
+
+fit %>%   #filter(estimate > 0) %>%
+  filter(time<3650) %>% # limit to 10 year timeframe
+  ggplot(aes(x = time/365, estimate)) + 
+  geom_line() +
+  scale_x_continuous(breaks = seq(0,10, by = 1)) +
+  geom_point(shape = "+") + 
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high), alpha=.25) + 
+  facet_grid(to ~ from, scales = "free_x") + 
+  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
+  theme_bw()
+```    
+
+Now with tidy data and a covariate:
+  ```{r survfit-major}
+fit <- survfit(Surv(entry, exit, status) ~ MAJOR + strata(transition), data = d) %>%
+  tidy() 
+
+fit %<>%
+  separate(strata, c("Major", "strata"), ", ") %>% 
+  #filter(estimate > 0) %>%
+  filter(time<3650) %>% # limit to 10 year timeframe
+  mutate(from = factor(paste("from",gsub(".*=| to .*","", strata)) ) ) %>% 
+  mutate(to = gsub(".*=|.* to ","to ", strata) ) %>%
+  mutate(to = gsub(" *$","", to) ) 
+
+fit %>% 
+  ggplot(aes(x = time/365, estimate)) + 
+  geom_line(aes(color = Major)) +
+  scale_x_continuous(breaks = seq(0,10, by = 1)) +
+  geom_point(aes(color = Major), shape = "+") + 
+  geom_ribbon(aes(fill = Major, ymin = conf.low, ymax = conf.high), alpha=.25) + 
+  facet_grid(to ~ from, scales = "free_x") + 
+  labs(x = "Years" , y = "KM probability transition takes longer than t") + 
+  theme_bw()
+```    
 
 
 
