@@ -62,6 +62,12 @@ Our findings hold important implications for our understanding of transparency a
 
 - Add covariates
 
+- statistics at 50 percent 
+
+- figure out `msfit` newdata argument
+
+- describe `mstate` output 
+
 ---
 
 
