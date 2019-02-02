@@ -906,7 +906,7 @@ List of unique rule stages and how we code each (Note /2 means the second such d
  [1] "Final Rule"  = Final Rule                         
  [2] "Undetermined" = Undetermined                        
  [3] "NPRM" = Proposed Rule                                
- [4] "SNPRM" = SNPRM (sometimes folded into Proposed Rule)
+ [4] "SNPRM" = SNPRM (sometimes folded into Proposed Rule) 
  [5] "Interim Final Rule/4" = Interim Final Rule                
  [6] "Interim Final Rule" = Interim Final Rule                  
  [7] "Withdrawal" = Withdrawal                          
