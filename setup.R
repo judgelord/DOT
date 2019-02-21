@@ -23,8 +23,7 @@ requires <- c("gmailr",
               "tidyverse",
               "broom",
               "survminer",
-              "ggfortify"
-              )
+              "ggfortify")
 to_install <- c(requires %in% rownames(installed.packages()) == FALSE)
 install.packages(c(requires[to_install], "NA"), repos = "https://cloud.r-project.org/" )
 
@@ -51,6 +50,7 @@ library(knitr)
 library(survminer)
 library(ggfortify)
 library(broom)
+library(here)
 
 knitr::opts_chunk$set(echo = TRUE, 
                       cache = F, 

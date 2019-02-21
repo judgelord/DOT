@@ -391,6 +391,8 @@ tmat <- transMat(from, names = events)
 
 # ALL OBS ARE TRANSITIONS, HOWEVER, WE CAN INCLUDE NON TRANSITION OBS (i.e. months where no transition happened) -- DOES IT HELP? Perhaps only with covariates that have values for those non-transition months?
 d$status <- 1
+
+save(d, file = here("data/2-stage.Rdata"))
 ```
 
 In estimation, the multi-stage duration model is stratified by transition AND fitted per transition. 
@@ -601,8 +603,7 @@ fit %>% filter(time < 3650) %>%
   # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
   labs(x = "Years" , y = "Cumulative incidence of all transitions") +
   #facet_grid(. ~ from) + # for comparing states without covariates 
-  facet_grid(to ~ from) + # for comparing covariates within states
-  theme_bw()
+  facet_grid(to ~ from)# for comparing covariates within states
 ```
 
 
