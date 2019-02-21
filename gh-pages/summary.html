@@ -346,7 +346,7 @@ dotMonthly %&lt;&gt;% group_by(RIN) %&gt;%
 dotRIN %&lt;&gt;% mutate(WithdrawalPublished = coalesce(WithdrawalPublished,Terminated)) %&gt;%
   mutate(FinalRulePublished = ifelse(STAGE == &quot;Final Rule&quot; &amp; is.na(FinalRulePublished), publicationactual, FinalRulePublished))
 
-d &lt;- dotRIN %&gt;% filter(is.na(enddate), !is.na(initiated), DOTdate != lastreport)
+d &lt;- dotRIN %&gt;% filter(is.na(enddate), !is.na(initiated), DOTdate != lastreport) %&gt;% ungroup()
 
 # d %&gt;% group_by(DOTdate) %&gt;% count() %&gt;% ungroup()
 
@@ -363,261 +363,80 @@ IFRs &lt;- dotRIN %&gt;%
   select(RIN, initiated, DOTdate, STAGE, docket, fedreg, publicationactual, NPRMpublished, FinalRulePublished, WithdrawalPublished, IFRpublished)
 
 write_csv(IFRs, path= here(&quot;data/IFRs_without_finals.csv&quot;))</code></pre>
-<p>We have 29 rules with unknown outcomes <a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv">download .csv</a></p>
-<pre class="r"><code>kable(d %&gt;% select(RIN, initiated, DOTdate, docket, fedreg, publicationactual))</code></pre>
+<p>We have final outcomes for 256 RINs, 97 RINs were in progress as of 2018-09-01, and 29 rules dropped out with unknown outcomes [<a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv">download .csv</a>], including these:</p>
+<pre class="r"><code>kable(d %&gt;% select(RIN, DOTdate, docket, fedreg)%&gt;% top_n(5)) </code></pre>
 <table>
 <thead>
 <tr class="header">
 <th align="left">RIN</th>
-<th align="left">initiated</th>
 <th align="left">DOTdate</th>
 <th align="left">docket</th>
 <th align="left">fedreg</th>
-<th align="left">publicationactual</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">2105-ZA05</td>
-<td align="left">2018-04-24</td>
-<td align="left">2018-07-01</td>
-<td align="left"></td>
-<td align="left">Notice: None</td>
-<td align="left">2018-05-23</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF74</td>
-<td align="left">2016-08-09</td>
-<td align="left">2018-06-01</td>
-<td align="left"></td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
 <td align="left">2125-AF78</td>
-<td align="left">2017-09-25</td>
 <td align="left">2018-03-01</td>
 <td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">2105-AE31</td>
-<td align="left">2010-10-01</td>
 <td align="left">2018-03-01</td>
 <td align="left"></td>
 <td align="left">Withdrawal: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2127-ZA13</td>
-<td align="left">2017-10-23</td>
-<td align="left">2018-01-01</td>
-<td align="left"></td>
-<td align="left">Notice: None</td>
-<td align="left">2018-01-18</td>
-</tr>
-<tr class="even">
-<td align="left">2127-AL91</td>
-<td align="left">2017-09-20</td>
-<td align="left">2017-10-01</td>
-<td align="left"></td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">2125-AF65</td>
-<td align="left">2014-01-24</td>
 <td align="left">2017-09-01</td>
 <td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">2105-AE29</td>
-<td align="left">2013-11-15</td>
 <td align="left">2017-09-01</td>
 <td align="left">DOT-OST-2013-0014</td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2120-AJ71</td>
-<td align="left">2010-03-02</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF51</td>
-<td align="left">2012-07-06</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">2130-AC17</td>
-<td align="left">2008-10-16</td>
 <td align="left">2017-08-01</td>
 <td align="left">FRA-2009-0106</td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="even">
-<td align="left">2132-AB17</td>
-<td align="left">2012-07-06</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2137-AF28</td>
-<td align="left">2016-10-12</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2132-AB06</td>
-<td align="left">2012-12-13</td>
-<td align="left">2016-05-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2132-ZA03</td>
-<td align="left">2015-02-12</td>
-<td align="left">2015-10-01</td>
-<td align="left"></td>
-<td align="left">Request for Comments: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-ZA06</td>
-<td align="left">2014-07-17</td>
-<td align="left">2015-07-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: 79 FR 70914</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
 <td align="left">2127-AK87</td>
-<td align="left">2011-02-22</td>
 <td align="left">2014-05-01</td>
 <td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2120-AK05</td>
-<td align="left">2011-03-03</td>
-<td align="left">2012-12-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2120-AK04</td>
-<td align="left">2009-01-05</td>
-<td align="left">2012-08-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2130-AC25</td>
-<td align="left">2010-11-29</td>
-<td align="left">2012-03-01</td>
-<td align="left">FRA-2010-0178</td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">2126-AB32</td>
-<td align="left">2010-08-20</td>
 <td align="left">2011-12-01</td>
 <td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">2137-AE75</td>
-<td align="left">2010-08-20</td>
 <td align="left">2011-12-01</td>
 <td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2125-AF39</td>
-<td align="left">2011-02-16</td>
-<td align="left">2011-11-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF38</td>
-<td align="left">2010-10-21</td>
-<td align="left">2011-10-01</td>
-<td align="left"></td>
-<td align="left">NPRM Termination: None</td>
-<td align="left">2011-09-07</td>
-</tr>
-<tr class="odd">
-<td align="left">2133-AB75</td>
-<td align="left">2008-10-14</td>
-<td align="left">2011-10-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2127-AK83</td>
-<td align="left">2011-01-14</td>
-<td align="left">2011-04-01</td>
-<td align="left"></td>
-<td align="left">Reconsideration of Final Rule: None</td>
-<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">2137-AE67</td>
-<td align="left">2010-08-20</td>
 <td align="left">2011-04-01</td>
 <td align="left">PHMSA 2010-0254/FMCSA 2010-0312</td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2120-AI84</td>
-<td align="left">2006-03-15</td>
-<td align="left">2011-02-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">2010-12-20</td>
-</tr>
-<tr class="odd">
-<td align="left">2127-AK00</td>
-<td align="left">2007-05-07</td>
-<td align="left">2008-05-01</td>
-<td align="left">Unknown</td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
 </tr>
 </tbody>
 </table>
-<p>We have 2 IFRs without Final Rules <a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv">download .csv</a></p>
-<pre class="r"><code>kable(d %&gt;% select(RIN, initiated, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )</code></pre>
+<p>We have 2 IFRs without Final Rules [<a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv">download .csv</a>]</p>
+<pre class="r"><code>kable(IFRs %&gt;% select(RIN, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )</code></pre>
 <table>
 <thead>
 <tr class="header">
 <th align="left">RIN</th>
-<th align="left">initiated</th>
 <th align="left">DOTdate</th>
 <th align="left">docket</th>
 <th align="left">fedreg</th>
@@ -627,264 +446,19 @@ write_csv(IFRs, path= here(&quot;data/IFRs_without_finals.csv&quot;))</code></pr
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">2105-ZA05</td>
-<td align="left">2018-04-24</td>
-<td align="left">2018-07-01</td>
-<td align="left"></td>
-<td align="left">Notice: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF74</td>
-<td align="left">2016-08-09</td>
-<td align="left">2018-06-01</td>
-<td align="left"></td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2125-AF78</td>
-<td align="left">2017-09-25</td>
-<td align="left">2018-03-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2105-AE31</td>
-<td align="left">2010-10-01</td>
-<td align="left">2018-03-01</td>
-<td align="left"></td>
-<td align="left">Withdrawal: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2127-ZA13</td>
-<td align="left">2017-10-23</td>
-<td align="left">2018-01-01</td>
-<td align="left"></td>
-<td align="left">Notice: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2127-AL91</td>
-<td align="left">2017-09-20</td>
-<td align="left">2017-10-01</td>
-<td align="left"></td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2125-AF65</td>
-<td align="left">2014-01-24</td>
-<td align="left">2017-09-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2105-AE29</td>
-<td align="left">2013-11-15</td>
-<td align="left">2017-09-01</td>
-<td align="left">DOT-OST-2013-0014</td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2120-AJ71</td>
-<td align="left">2010-03-02</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF51</td>
-<td align="left">2012-07-06</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2130-AC17</td>
-<td align="left">2008-10-16</td>
-<td align="left">2017-08-01</td>
-<td align="left">FRA-2009-0106</td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2132-AB17</td>
-<td align="left">2012-07-06</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2137-AF28</td>
-<td align="left">2016-10-12</td>
-<td align="left">2017-08-01</td>
-<td align="left"></td>
-<td align="left">Final Rule: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2132-AB06</td>
-<td align="left">2012-12-13</td>
+<td align="left">2127-AL30</td>
 <td align="left">2016-05-01</td>
 <td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2132-ZA03</td>
-<td align="left">2015-02-12</td>
-<td align="left">2015-10-01</td>
-<td align="left"></td>
-<td align="left">Request for Comments: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-ZA06</td>
-<td align="left">2014-07-17</td>
-<td align="left">2015-07-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: 79 FR 70914</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2127-AK87</td>
-<td align="left">2011-02-22</td>
-<td align="left">2014-05-01</td>
-<td align="left"></td>
 <td align="left">Undetermined: None</td>
-<td align="left">NA</td>
+<td align="left">2013-01-23</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
-<td align="left">2120-AK05</td>
-<td align="left">2011-03-03</td>
-<td align="left">2012-12-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2120-AK04</td>
-<td align="left">2009-01-05</td>
-<td align="left">2012-08-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2130-AC25</td>
-<td align="left">2010-11-29</td>
+<td align="left">2120-AJ92</td>
 <td align="left">2012-03-01</td>
-<td align="left">FRA-2010-0178</td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2126-AB32</td>
-<td align="left">2010-08-20</td>
-<td align="left">2011-12-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2137-AE75</td>
-<td align="left">2010-08-20</td>
-<td align="left">2011-12-01</td>
-<td align="left"></td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2125-AF39</td>
-<td align="left">2011-02-16</td>
-<td align="left">2011-11-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2125-AF38</td>
-<td align="left">2010-10-21</td>
-<td align="left">2011-10-01</td>
-<td align="left"></td>
-<td align="left">NPRM Termination: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2133-AB75</td>
-<td align="left">2008-10-14</td>
-<td align="left">2011-10-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2127-AK83</td>
-<td align="left">2011-01-14</td>
-<td align="left">2011-04-01</td>
-<td align="left"></td>
-<td align="left">Reconsideration of Final Rule: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2137-AE67</td>
-<td align="left">2010-08-20</td>
-<td align="left">2011-04-01</td>
-<td align="left">PHMSA 2010-0254/FMCSA 2010-0312</td>
-<td align="left">Undetermined: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="left">2120-AI84</td>
-<td align="left">2006-03-15</td>
-<td align="left">2011-02-01</td>
-<td align="left"></td>
-<td align="left">NPRM: None</td>
-<td align="left">NA</td>
-<td align="right">NA</td>
-</tr>
-<tr class="odd">
-<td align="left">2127-AK00</td>
-<td align="left">2007-05-07</td>
-<td align="left">2008-05-01</td>
-<td align="left">Unknown</td>
-<td align="left">Other: None</td>
-<td align="left">NA</td>
+<td align="left">FAA-2011-0186</td>
+<td align="left">Disposition of Comments: 77 FR 11385</td>
+<td align="left">2011-03-08</td>
 <td align="right">NA</td>
 </tr>
 </tbody>
@@ -977,11 +551,8 @@ dotRIN$STAGE %&lt;&gt;% {gsub(&quot;SNPRM&quot;, &quot;Proposed Rule&quot;, .)}
 <p>Second, we estimate the probability that a given transition will occur in a given time window using the Kaplan-Meier estimator. Covariates may increase or decrease the likelihood that a given transition will occur, thus increasing or decreasing the estimated rate of advancing from a given stage to a given stage in the policymaking process, and thus the Kaplan-Meier estimate that a given transition will occur after a given date.</p>
 <p>To capture common elements of each rule, we use a penalized likelihood a random effects—a <a href="https://www.rdocumentation.org/packages/survival/versions/2.11-4/topics/frailty">frailty</a> model—with frailties for each rulemaking project (each Regulatory Identification Number).</p>
 <p>The paper that is most similar to the analysis we aim to conduct is <a href="https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Metzger-and-Jones-Surviving-Phases-VIM-07MAY15rev%20(1).pdf">“Surviving Phases: Introducing Multi-state Survival Models”</a> by Metzger and Jones in Political Analysis. I have not yet found their <a href="https://github.com/judgelord/DOT/tree/master/surviving_phases_dataverse">replication materials</a> to be very helpful, but their <a href="https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Jones%20and%20Metzger%2C%20Appendices.pdf">appendix</a> has some useful illustrations.</p>
-<p>We use <code>mstate</code>, an R package has been developed for multi-state duration modeling. Unfortunately, the <a href="https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf">vignette</a> does not use tidy data and is not the most helpful. Other R packages that could be relevant are <code>TPmsm</code> which also estimates transition probabilities.</p>
-<p>The JSS article <a href="https://www.jstatsoft.org/article/view/v038i07">introducing mstate</a> and the <a href="https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf">multi-state and competing risk vignette</a> are helpful.</p>
-<p>Rpubs also has a useful <a href="https://rpubs.com/alecri/258589">review of survival analysis</a>.</p>
-<p>There are several ggplot wrappers for plotting survival objects, including <a href="https://rpubs.com/alecri/258589">ggsurvplot</a> and <a href="https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf">survminer</a>, and <code>ggfortify</code> allows <code>survfit</code> to be used by <code>autoplot()</code>, but I opt to skip the wrappers and use tidy data.</p>
-<p>The <code>tidy()</code> function from the <code>broom</code> package converts <code>survfit</code> objects into tidy data frames (see <a href="https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit">tidy.survfit documentation</a>). Unfortunately, <code>tidy()</code> does not work for <code>mstate</code> and <code>probtrans</code> objects, so tidying those objects takes more work. Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may be about to bypass the <code>mstate</code> package. The inconsistency in naming and structure of various survival analysis objects is very annoying.</p>
+<p>We use <code>mstate</code>, an R package has been developed for multi-state duration modeling. Unfortunately, the <a href="https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf">vignette</a> does not use tidy data and is not the most helpful. Other R packages that could be relevant are <code>TPmsm</code> which also estimates transition probabilities. The JSS article <a href="https://www.jstatsoft.org/article/view/v038i07">introducing mstate</a> and the <a href="https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf">multi-state and competing risk vignette</a> are helpful. Rpubs also has a useful <a href="https://rpubs.com/alecri/258589">review of survival analysis</a>.</p>
+<p>There are several ggplot wrappers for plotting survival objects, including <a href="https://rpubs.com/alecri/258589">ggsurvplot</a> and <a href="https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf">survminer</a>, and <code>ggfortify</code> allows <code>survfit</code> to be used by <code>autoplot()</code>, but I opt to skip the wrappers and use tidy data. The <code>tidy()</code> function from the <code>broom</code> package converts <code>survfit</code> objects into tidy data frames (see <a href="https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit">tidy.survfit documentation</a>). Unfortunately, <code>tidy()</code> does not work for <code>mstate</code> and <code>probtrans</code> objects, so tidying those objects takes more work. <!-- Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may bypass the `mstate` package. The inconsistency in naming and structure of various survival analysis objects is very annoying.--></p>
 <div id="core-model" class="section level2">
 <h2>Core Model</h2>
 <p>First, we model the most common stages that rules go through with no covariates, only the dates of transition in and out of the pre-NPRM and NPRM stages. We use the DOT data with one observation per rule per stage.</p>

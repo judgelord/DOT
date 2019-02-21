@@ -111,7 +111,7 @@ lastreport <- max(dotRIN$DOTdate, na.rm = T)
 dotRIN %<>% mutate(WithdrawalPublished = coalesce(WithdrawalPublished,Terminated)) %>%
   mutate(FinalRulePublished = ifelse(STAGE == "Final Rule" & is.na(FinalRulePublished), publicationactual, FinalRulePublished))
 
-d <- dotRIN %>% filter(is.na(enddate), !is.na(initiated), DOTdate != lastreport)
+d <- dotRIN %>% filter(is.na(enddate), !is.na(initiated), DOTdate != lastreport) %>% ungroup()
 
 # d %>% group_by(DOTdate) %>% count() %>% ungroup()
 
@@ -130,15 +130,16 @@ IFRs <- dotRIN %>%
 write_csv(IFRs, path= here("data/IFRs_without_finals.csv"))
 ```
 
-We have `r nrow(d)` rules with unknown outcomes [download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv)
+We have final outcomes for `r nrow(dotRIN %>% filter(!is.na(enddate) ))` RINs, `r nrow(dotRIN %>% filter(DOTdate == lastreport))` RINs were in progress as of `r lastreport`,  and `r nrow(d)` rules dropped out with unknown outcomes [[download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv)], including these:
+
 ```{r}
-kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, publicationactual))
+kable(d %>% select(RIN, DOTdate, docket, fedreg)%>% top_n(5)) 
 ```
 
-We have `r nrow(IFRs)` IFRs without Final Rules [download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv)
+We have `r nrow(IFRs)` IFRs without Final Rules [[download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv)]
 
 ```{r}
-kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )
+kable(IFRs %>% select(RIN, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )
 ```
 
 
@@ -264,15 +265,10 @@ To capture common elements of each rule, we use a penalized likelihood a random 
 
 The paper that is most similar to the analysis we aim to conduct is ["Surviving Phases: Introducing Multi-state Survival Models"](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Metzger-and-Jones-Surviving-Phases-VIM-07MAY15rev%20(1).pdf) by Metzger and Jones in Political Analysis. I have not yet found their [replication materials](https://github.com/judgelord/DOT/tree/master/surviving_phases_dataverse) to be very helpful, but their [appendix](https://github.com/judgelord/DOT/blob/master/surviving_phases_dataverse/Jones%20and%20Metzger%2C%20Appendices.pdf) has some useful illustrations.
 
-We use `mstate`, an R package has been developed for multi-state duration modeling. Unfortunately, the [vignette](https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf) does not use tidy data and is not the most helpful. Other R packages that could be relevant are `TPmsm` which also estimates transition probabilities. 
+We use `mstate`, an R package has been developed for multi-state duration modeling. Unfortunately, the [vignette](https://cran.r-project.org/web/packages/mstate/vignettes/Tutorial.pdf) does not use tidy data and is not the most helpful. Other R packages that could be relevant are `TPmsm` which also estimates transition probabilities. The JSS article [introducing mstate](https://www.jstatsoft.org/article/view/v038i07) and the [multi-state and competing risk vignette](https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf) are helpful. Rpubs also has a useful [review of survival analysis](https://rpubs.com/alecri/258589).
 
-The JSS article [introducing mstate](https://www.jstatsoft.org/article/view/v038i07) and the [multi-state and competing risk vignette](https://cran.r-project.org/web/packages/survival/vignettes/compete.pdf) are helpful. 
-
-Rpubs also has a useful [review of survival analysis](https://rpubs.com/alecri/258589).
-
-There are several ggplot wrappers for plotting survival objects, including [ggsurvplot](https://rpubs.com/alecri/258589) and [survminer](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf), and `ggfortify` allows `survfit` to be used by `autoplot()`, but I opt to skip the wrappers and use tidy data.
-
-The `tidy()` function from the `broom` package converts `survfit` objects into tidy data frames (see [tidy.survfit documentation](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit)). Unfortunately, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may be about to bypass the `mstate` package. The inconsistency in naming and structure of various survival analysis objects is very annoying.
+There are several ggplot wrappers for plotting survival objects, including [ggsurvplot](https://rpubs.com/alecri/258589) and [survminer](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf), and `ggfortify` allows `survfit` to be used by `autoplot()`, but I opt to skip the wrappers and use tidy data. 
+The `tidy()` function from the `broom` package converts `survfit` objects into tidy data frames (see [tidy.survfit documentation](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit)). Unfortunately, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. <!-- Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may bypass the `mstate` package. The inconsistency in naming and structure of various survival analysis objects is very annoying.-->
 
 
 ## Core Model
