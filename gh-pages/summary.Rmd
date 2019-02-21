@@ -6,10 +6,9 @@ output:
     code_folding: hide
 ---
 
-```{r setup, include=FALSE}
+```{r setup, echo=FALSE}
 if(require(here)){install.packages("here", repos = "https://cloud.r-project.org/")}
-library(here)
-source(here("setup.R"))
+source(here::here("setup.R"))
 
 # ABSTRACT NOTES
 # https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
@@ -18,22 +17,15 @@ source(here("setup.R"))
   # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
 ```
 
-```{r global.options, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, 
-                      cache = F, 
-                      fig.width=8.5, 
-                      fig.align = 'center',
-                      fig.path='Figs/',
-                      warning=FALSE, message=FALSE)
-```
+
 
 # Abstract
 
-Administrative rulemaking is often conceptualized as a straightforward translation of legislative delegations into agency rules, where bureaucrats adopt their most preferred policy given their constraints, often speeding up or slowing down the policy process to do so. The rulemaking process is indeed highly formulaic, requiring publication of a draft, external review, and public comment before a final rule is published. However, much of the politics of rulemaking may play out in the less formal and transparent process before a draft policy is published. In this stage, different priorities and constraints may drive decisions about which draft policies are published and when.
+Administrative rulemaking is often presented as a straightforward translation of legislative delegations into agency rules, where bureaucrats adopt their most preferred policy given their constraints, often speeding up or slowing down the policy process to do so. The rulemaking process is indeed highly formulaic, requiring publication of a draft, external review, and public comment before a final rule is published. However, much of the politics of rulemaking may play out in the less formal and transparent process before a draft policy is published. In this stage, different priorities and constraints may drive decisions about which draft policies are published and when.
 
-Theories of policymaking suggest that the politics of rulemaking may differ significantly in the pre-proposal stage. Yet, this part of the policy process has largely eluded quantitative study due to a lack of systematic data. This paper begins to fill this gap. We introduce a new dataset based on thousands of monthly internal project status reports by the U.S. Department of Transportation that allow us to track a rulemaking effort from its origin date through its finalization.  Additionally, we develop a number of novel measures of prioritization and constraints that we are able to measure before and after a draft rule is made public,  including the degree of agency resource constraints, internal agency prioritization, changes in sub-agency political appointees, congressional and presidential attention, and the threat of litigation and sanction by courts.
+Theories of policymaking suggest that the politics of rulemaking may differ significantly in the pre-proposal stage. Yet, this part of the policy process has largely eluded quantitative study due to a lack of systematic data. This paper begins to fill this gap. We introduce a new dataset based on thousands of monthly internal project status reports by the U.S. Department of Transportation that allow us to track a rulemaking effort from its origin date through its finalization.  Additionally, we develop several novel measures of prioritization and constraints that we measure both before and after a draft rule is made public,  including the degree of agency resource constraints, internal agency prioritization, changes in sub-agency political appointees, congressional and presidential attention, and the threat of litigation and sanction by courts.
 
-Using these new data and measures, we model the drivers of prioritization and constraint as a multi-stage policy process and identify different political forces at work in each stage. Specifically, we use a multi-stage hazard model to test factors that may affect the timing of rules being proposed or finalized thus identify predictors of prioritization and delay. Previous research suggests that that greater internal agency resources—in terms of personnel and budgets—will speed up rulemaking during the largely opaque pre-proposal stage, while attention from external actors, including Congress and the president, will speed up rulemaking during the more transparent notice and comment period. Our data and measures allow new tests of these theories. We show that resources, complexity, and salience have different effects on the speed of rule-writing across different stages.
+Using these new data and measures, we model the drivers of prioritization and constraint as a multi-stage policy process and identify different political forces at work in each stage. Specifically, we use a multi-stage duration model to test factors that may affect the timing of rules being proposed or finalized thus identify predictors of prioritization and delay. Previous research suggests that that greater internal agency resources—in terms of personnel and budgets—will speed up rulemaking during the largely opaque pre-proposal stage, while attention from external actors, including Congress and the president, will speed up rulemaking during the more transparent notice and comment period. Our data and measures allow new tests of these theories. We show that resources, complexity, and salience have different effects on the speed of rule-writing across different stages.
 
 Our findings hold important implications for our understanding of transparency and bureaucratic policymaking within a representative democracy.
 
@@ -113,6 +105,41 @@ This table shows the average number of months after initiation at which certian 
 |Termination        |||| n = `r sum(dotStage$STAGE == "Termination", na.rm =T)`|
 
 
+```{r enddate}
+lastreport <- max(dotRIN$DOTdate, na.rm = T)
+
+dotRIN %<>% mutate(WithdrawalPublished = coalesce(WithdrawalPublished,Terminated)) %>%
+  mutate(FinalRulePublished = ifelse(STAGE == "Final Rule" & is.na(FinalRulePublished), publicationactual, FinalRulePublished))
+
+d <- dotRIN %>% filter(is.na(enddate), !is.na(initiated), DOTdate != lastreport)
+
+# d %>% group_by(DOTdate) %>% count() %>% ungroup()
+
+d %<>% select(RIN, initiated, DOTdate, STAGE, docket, fedreg, publicationactual, NPRMpublished, FinalRulePublished, WithdrawalPublished, IFRpublished)
+# NOTE THERE IS SOME WORK TO DO HERE WITH PUBLICATION DATES 
+
+# in the meantime:
+d  %<>% filter_at(vars(contains("published")), all_vars(is.na(.)))
+
+write_csv(d, path= here("data/Unknown_EndDates.csv"))
+
+IFRs <- dotRIN %>% 
+  filter(!is.na(IFRpublished), is.na(FinalRulePublished), DOTdate != lastreport) %>% 
+  select(RIN, initiated, DOTdate, STAGE, docket, fedreg, publicationactual, NPRMpublished, FinalRulePublished, WithdrawalPublished, IFRpublished)
+
+write_csv(IFRs, path= here("data/IFRs_without_finals.csv"))
+```
+
+Here is a file of `r nrow(d)` [rules with unknown outcomes](https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv)
+```{r}
+kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, publicationactual))
+```
+
+Here is a file of `r nrow(IFRs)` [IFRs without Final Rules](https://github.com/judgelord/DOT/data/blob/master/content/data/IFRs_without_finals.csv)
+
+```{r}
+kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )
+```
 
 
 ---
