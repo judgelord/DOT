@@ -6,7 +6,7 @@ output:
     code_folding: hide
 ---
 
-```{r setup, echo=FALSE}
+```{r setup, include=FALSE}
 if(require(here)){install.packages("here", repos = "https://cloud.r-project.org/")}
 source(here::here("setup.R"))
 
@@ -130,12 +130,12 @@ IFRs <- dotRIN %>%
 write_csv(IFRs, path= here("data/IFRs_without_finals.csv"))
 ```
 
-Here is a file of `r nrow(d)` [rules with unknown outcomes](https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv)
+We have `r nrow(d)` rules with unknown outcomes [download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv)
 ```{r}
 kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, publicationactual))
 ```
 
-Here is a file of `r nrow(IFRs)` [IFRs without Final Rules](https://github.com/judgelord/DOT/data/blob/master/content/data/IFRs_without_finals.csv)
+We have `r nrow(IFRs)` IFRs without Final Rules [download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/IFRs_without_finals.csv)
 
 ```{r}
 kable(d %>% select(RIN, initiated, DOTdate, docket, fedreg, IFRpublished, FinalRulePublished) )
