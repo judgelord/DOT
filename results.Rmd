@@ -105,3 +105,40 @@ There is evidence that rulemaking is delayed, even in the pre-NPRM stage. Howeve
 ## Hypotheses about which transition will occur:
 
 ### Rulemaking projects are more likely to be withdrawn or otherwise terminated in both the pre-NPRM and post-NPRM stage after a new administration takes over. 
+
+
+
+```{r mstate-samePOTUS}
+
+
+fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ HasANPRM + strata(transition),
+               data = d) %>% tidy()
+# FIXME
+fit %<>%   filter(estimate != 0) 
+
+# replace numeric transition index with transition names (note: levels with too few observations may be dropped)
+fit$state %<>% as.factor()
+levels(fit$state) <- levels(d$transition)[as.numeric(levels(fit$state))]
+fit$Transition <- fit$state
+
+# make faceting variables for each current and future state
+fit %<>% 
+  mutate(to = gsub(".*=|.* to ", "to ", Transition) ) %>%
+  mutate(from = factor(paste("from", gsub(".*=| to .*","", Transition)) ) ) 
+# trim srata 
+fit$strata %<>% str_replace(",.*", "") 
+
+# plot
+fit %>% filter(time < 3650) %>%
+  ggplot(aes(x = time/365, color = strata, fill = strata) ) +
+  geom_hline(yintercept = .5) +
+  geom_step(aes(y = estimate)) +
+    geom_point(aes(y = estimate), shape = "+") +
+  geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
+                  ymin = estimate - 1.96*std.error),
+              alpha = .2, color = NA) + 
+  # geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  labs(x = "Years" , y = "Cumulative incidence of all transitions") +
+  #facet_grid(. ~ from) + # for comparing states without covariates 
+  facet_grid(to ~ from)# for comparing covariates within states
+```
