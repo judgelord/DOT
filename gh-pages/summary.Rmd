@@ -95,7 +95,7 @@ We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of thes
 
 This table shows the average number of months after initiation at which certian milestones are reached:
 
-| *Average months until:*   | to Secretary| to ORIA | Published | *N* |
+|  Document  | *Average months until:* to Secretary| to ORIA | Published | *N* |
 | ------------------ | ------------- | ---------------- | -------------------- | --------- |
 |ANPRM              | `r round(mean(dotStage$DaysUntilOSTANPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBANPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilANPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Prerule", na.rm =T)` |
 |NPRM               |`r round(mean(dotStage$DaysUntilOSTNPRM, na.rm = T)/30)` |`r round(mean(dotStage$DaysUntilOMBNPRM, na.rm = T)/30)` | `r round(mean(dotStage$DaysUntilNPRM, na.rm = T)/30)`| n = `r sum(dotStage$STAGE == "Proposed Rule", na.rm =T)` |
@@ -147,7 +147,7 @@ write_csv(noNPRMs, path= here("data/finals_without_NPRMs.csv"))
 ```
 
 
-
+### Missing data
 
 We have final outcomes for `r nrow(dotRIN %>% filter(!is.na(enddate) ))` RINs, `r nrow(dotRIN %>% filter(DOTdate == lastreport))` RINs were in progress as of `r lastreport`,  and `r nrow(d)` rules dropped out with unknown outcomes [[download .csv](https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv)], including these:
 
@@ -162,6 +162,7 @@ kable(IFRs %>% select(RIN, DOTdate, docket, fedreg, IFRpublished, FinalRulePubli
 ```
 
 ---
+
 ### Odd cases
 
 RINs without NPRMs:
@@ -198,6 +199,8 @@ RINs where the NPRM is unclear:
 - 2130-AC37, [FRA-2008-0059](https://www.federalregister.gov/documents/2014/01/10/2013-31417/railroad-workplace-safety-adjacent-track-on-track-safety-for-roadway-workers) "further responds to the petitions, addresses the comments on the petitions, and amends and clarifies certain sections of the November 30, 2011, final rule."
 
 ---
+
+### Combining data sources
 
 Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:
 ```{r timeline, fig.height = 17}

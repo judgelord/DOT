@@ -213,6 +213,9 @@ $(document).ready(function () {
 </ul></li>
 <li><a href="#data-1">Data</a><ul>
 <li><a href="#summary-stats">Summary Stats</a></li>
+<li><a href="#missing-data">Missing data</a></li>
+<li><a href="#odd-cases">Odd cases</a></li>
+<li><a href="#combining-data-sources">Combining data sources</a></li>
 </ul></li>
 <li><a href="#models">Models</a><ul>
 <li><a href="#core-model">Core Model</a><ul>
@@ -282,8 +285,8 @@ dotMonthly %&lt;&gt;% group_by(RIN) %&gt;%
 <table>
 <thead>
 <tr class="header">
-<th><em>Average months until:</em></th>
-<th>to Secretary</th>
+<th>Document</th>
+<th><em>Average months until:</em> to Secretary</th>
 <th>to ORIA</th>
 <th>Published</th>
 <th><em>N</em></th>
@@ -378,6 +381,9 @@ write_csv(noNPRMs, path= here(&quot;data/finals_without_NPRMs.csv&quot;))
 
 # other no NPRMS
 # &quot;FHWA-2017-003&quot; is not in the federal register</code></pre>
+</div>
+<div id="missing-data" class="section level3">
+<h3>Missing data</h3>
 <p>We have final outcomes for 256 RINs, 97 RINs were in progress as of 2018-09-01, and 29 rules dropped out with unknown outcomes [<a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv">download .csv</a>], including these:</p>
 <pre class="r"><code>kable(d %&gt;% select(RIN, DOTdate, docket, fedreg)%&gt;% top_n(5)) </code></pre>
 <table>
@@ -478,6 +484,27 @@ write_csv(noNPRMs, path= here(&quot;data/finals_without_NPRMs.csv&quot;))
 </tr>
 </tbody>
 </table>
+<hr />
+</div>
+<div id="odd-cases" class="section level3">
+<h3>Odd cases</h3>
+<p>RINs without NPRMs:</p>
+<ul>
+<li><p>RINs 2132-AB33 and 2125-AF75, <a href="https://www.federalregister.gov/documents/2017/11/29/2017-25762/metropolitan-planning-organization-coordination-and-planning-area-reform">FHWA-2017-003</a> “simply carries out the statutory language found in Public Law 115-33 without interpretation to rescind the December 2016 Final Rule”</p></li>
+<li><p>2137-AF17 <a href="https://www.federalregister.gov/documents/2016/08/15/2016-19406/hazardous-materials-fast-act-requirements-for-flammable-liquids-and-rail-tank-cars">PHMSA-2016-0011</a> “simply codify these non-discretionary statutory mandates, PHMSA finds that timely execution of agency functions would be impeded by the procedures of public notice that are normally required by the Administrative Procedure Act.”</p></li>
+<li><p>2120-AK25, <a href="https://www.govinfo.gov/content/pkg/FR-2013-07-02/html/2013-15843.htm">FAA-2013-0503</a> “codifies the statutory prohibition and relieving circumstances into the regulations in 14 CFR. The FAA has no discretion to change any provision of the statute, and it is being codified into the regulations as adopted.”</p></li>
+<li><p>2126-AB58, <a href="https://www.fmcsa.dot.gov/sites/fmcsa.dot.gov/files/docs/Federal_Register_Final_Rule_Tranportation_of_Agricultural_Commodities_508CLN.pdf">FMCSA–2012–0378</a>“simply adopts jurisdictional limitations enacted by Congress, and FMCSA therefore finds”good cause“” under 5 U.S.C. 553 to promulgate this rule as a final rule because prior notice and comment would be “unnecessary”&quot; under the circumstances&quot;</p></li>
+<li><p>2126-AB27, <a href="https://www.federalregister.gov/documents/2010/09/21/2010-23479/parts-and-accessories-necessary-for-safe-operation-antilock-brake-systems">FMCSA-2010-0186</a>, with a “direct final rule” published on 09/21/2010</p></li>
+<li><p>2127-AK61 and <a href="https://www.nhtsa.gov/sites/nhtsa.dot.gov/files/fmvss/CARS_Amendment_1.pdf">2127-AK54</a> appear to be notices and ammendments to the 2127-AK53, <a href="https://www.federalregister.gov/documents/2009/07/29/E9-17994/requirements-and-procedures-for-consumer-assistance-to-recycle-and-save-program">NHTSA-2009-0120</a> final rule published on 07/29/2009. “This rulemaking is economically significant” but “The rule is being issued without first providing a notice and an opportunity for public comment. As noted above, the Act provides that the rule shall be issued within 30 days after enactment, “notwithstanding” the requirements of 5 U.S.C. 553, the Federal law requiring notice and comment. Further, given that schedule and the necessity of quickly beginning to implement this 4-month program with a statutorily fixed end date, the agency finds for good cause that providing notice and comment is impracticable and contrary to the public interest.”–“Although there was not time to provide notice and an opportunity to comment prior to issuance of this final rule, NHTSA did engage in extensive outreach prior to its issuance with representatives of those entities most knowledgeable about the subject matter.”</p></li>
+<li><p>2120-AJ01, <a href="https://www.federalregister.gov/documents/2009/07/15/E9-16777/part-121-pilot-age-limit">FAA-2006-26139</a>: “The FAA finds that notice and public comment to this final rule are unnecessary and contrary to the public interest. This final rule is a result of the Act. Because this rule implements Congressional mandates, good cause exists for the FAA to amend without notice its rules concerning pilot age limits. A legislative mandate of this nature makes it unnecessary to provide an opportunity for notice and comment.”</p></li>
+<li><p>2120-AJ37, <a href="https://www.federalregister.gov/documents/2009/05/14/E9-11289/drug-and-alcohol-testing-program">FAA-2008-0937</a>: “We find good cause exists under 5 U.S.C. 553(b)(B) and (d)(3) to implement this final rule immediately without prior notice and comment. This rule merely reorganizes existing regulations governing drug and alcohol testing into their own part and makes clarifying changes to the existing parts of the rules necessitated by the reorganization.”</p></li>
+<li><p>2126-AA98 <a href="https://www.federalregister.gov/documents/2010/02/01/2010-1955/safety-requirements-for-operators-of-small-passenger-carrying-commercial-motor-vehicles-used-in">FMCSA-2009-0127</a>“In this case, notice and comment are unnecessary. The final rule amends FMCSA’s regulations to make them consistent with section 4136 of SAFETEA-LU, a provision which makes the FMCSRs applicable to the operation of 9- to 15-passenger vehicles when such vehicles are operated for direct compensation, in interstate commerce, regardless of the distance traveled. Because the statutory language does not provide FMCSA any discretion in adopting the necessary changes to its regulations, FMCSA finds good cause under 5 U.S.C. 553(b) that prior notice and comment on this final rule is unnecessary.”</p></li>
+</ul>
+<p>RINs where the NPRM is unclear: - 2130-AC37, <a href="https://www.federalregister.gov/documents/2014/01/10/2013-31417/railroad-workplace-safety-adjacent-track-on-track-safety-for-roadway-workers">FRA-2008-0059</a> “further responds to the petitions, addresses the comments on the petitions, and amends and clarifies certain sections of the November 30, 2011, final rule.”</p>
+<hr />
+</div>
+<div id="combining-data-sources" class="section level3">
+<h3>Combining data sources</h3>
 <p>Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:</p>
 <pre class="r"><code># If project is ongoing, define enddate as date last observed (for plotting active project status)
 dotMonthly %&lt;&gt;% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
