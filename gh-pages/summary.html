@@ -364,7 +364,20 @@ IFRs &lt;- dotRIN %&gt;%
 
 write_csv(IFRs, path= here(&quot;data/IFRs_without_finals.csv&quot;))
 
-noNPRMs &lt;- dotRIN %&gt;% filter(!is.na(FinalRulePublished) &amp; is.na(NPRMpublished) &amp; !is.na(initiated))</code></pre>
+## note, need to correct missed NPRMs, IFRs, termination dates
+noNPRMs &lt;- dotRIN %&gt;% 
+  filter(!is.na(FinalRulePublished) &amp; is.na(NPRMpublished) &amp; !is.na(initiated) ) %&gt;%
+  select(RIN, initiated, DOTdate, publicationactual, docket, title, fulltitle, fedreg, agency, PrevStage,DaysUntilFinalRule, FinalRulePublished, WithdrawalPublished, IFRpublished)
+
+# FIXME
+## need to correct missed NPRMs, IFRs, termination dates
+## SFAR OST ORBB are FAA geographic flight restrictions
+noNPRMs %&lt;&gt;%   filter(is.na(IFRpublished) &amp; !str_detect(title, &quot;SFAR|OSTT|ORBB&quot;) &amp; !str_detect(PrevStage, &quot;NPRM&quot;) &amp; !str_detect(PrevStage, &quot;Interim Final Rule&quot;))
+
+write_csv(noNPRMs, path= here(&quot;data/finals_without_NPRMs.csv&quot;))
+
+# other no NPRMS
+# &quot;FHWA-2017-003&quot; is not in the federal register</code></pre>
 <p>We have final outcomes for 256 RINs, 97 RINs were in progress as of 2018-09-01, and 29 rules dropped out with unknown outcomes [<a href="https://raw.githubusercontent.com/judgelord/DOT/master/data/Unknown_EndDates.csv">download .csv</a>], including these:</p>
 <pre class="r"><code>kable(d %&gt;% select(RIN, DOTdate, docket, fedreg)%&gt;% top_n(5)) </code></pre>
 <table>
@@ -465,7 +478,6 @@ noNPRMs &lt;- dotRIN %&gt;% filter(!is.na(FinalRulePublished) &amp; is.na(NPRMpu
 </tr>
 </tbody>
 </table>
-<hr />
 <p>Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:</p>
 <pre class="r"><code># If project is ongoing, define enddate as date last observed (for plotting active project status)
 dotMonthly %&lt;&gt;% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
