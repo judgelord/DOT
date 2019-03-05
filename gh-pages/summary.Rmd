@@ -7,7 +7,8 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-if(require(here)){install.packages("here", repos = "https://cloud.r-project.org/")}
+
+if(!"here" %in% rownames(installed.packages()) ){install.packages("here", repos = "https://cloud.r-project.org/")}
 source(here::here("setup.R"))
 
 # ABSTRACT NOTES
