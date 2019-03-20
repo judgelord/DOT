@@ -86,7 +86,6 @@ dotMonthly %<>% group_by(RIN) %>%
 
 ### Summary Stats
 
-
 We have initiation dates for `r length(unique(dotRIN$RIN))` unique RINs. Of these, `r sum(dotRIN$color == "Red", na.rm = T)` were marked 'delayed,'`r sum(dotRIN$color == "Yellow", na.rm = T)` were marked 'potentially delayed,' and `r sum(dotRIN$color == "Green", na.rm = T)` were marked 'on time' at the time they were last observed. However, DOT increasingly marks projects as 'not on a schedule' (`r sum(dotRIN$color == "Black", na.rm = T)` RINs were last observed in the “Black” category). `r dim(filter(dotMonthly, delayedever == T, !is.na(DOTdate)) %>% select(RIN) %>% distinct())[1]` projects were delayed at some point and `r sum(!is.na(dotRIN$whydelay))` of these give a reason for delay.
 
 `r sum(dotRIN$initiated > as.Date("2008-01-01"), na.rm = T)` RINs were initiated after 2008. `r sum(grepl("Final Rule", dotRIN$STAGE), na.rm = T)` made it to the post-NPRM stage, `r sum(dotStage$STAGE == "Withdrawal", na.rm =T)` have been withdrawn, and `r sum(dotStage$STAGE == "Termination", na.rm =T)` were terminated.
@@ -196,6 +195,7 @@ under the circumstances"
 
 
 RINs where the NPRM is unclear:
+
 - 2130-AC37, [FRA-2008-0059](https://www.federalregister.gov/documents/2014/01/10/2013-31417/railroad-workplace-safety-adjacent-track-on-track-safety-for-roadway-workers) "further responds to the petitions, addresses the comments on the petitions, and amends and clarifies certain sections of the November 30, 2011, final rule."
 
 ---
@@ -252,6 +252,9 @@ ggplot(aes(x = RIN)) +
 Notice how the DOT (esp. FTA and FHA) initiated a large number of projects shortly after Obama's reelection, probably waiting for assurance that they would be able to complete their work.  
 
 
+
+
+
 ---
 
 ```{r stages-hist}
@@ -262,6 +265,17 @@ ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other",
   labs(title = "Active per Month by Stage", x = "")
   #scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%y"), minor_breaks=NULL)
 ```
+
+
+```{r agency-hist}
+# stage histogram 
+ggplot(dotMonthly %>% ungroup()) +
+  stat_count(aes(DOTdate)) +
+  facet_grid(AGENCY~., scales = "free_y") +
+  labs(title = "Active per Month by Agency", x = "") + 
+  theme(strip.text.y = element_text(angle = 0))
+```
+
 
 ```{r hist-stages-published, include=FALSE}
 # publication histogram 
