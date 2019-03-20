@@ -1,3 +1,3 @@
-## This project extracts data from ~10,000 rule status reports, like this one:
+## This project extracts data from over 10,000 internal status reports, like this one:
 
 ![](NHSTA-2127-AG51-SNPRM.png)
