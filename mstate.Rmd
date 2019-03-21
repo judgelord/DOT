@@ -45,7 +45,7 @@ There are several ggplot wrappers for plotting survival objects, including [ggsu
 The `tidy()` function from the `broom` package converts `survfit` objects into tidy data frames (see [tidy.survfit documentation](https://www.rdocumentation.org/packages/broom/versions/0.5.0/topics/tidy.survfit)). Unfortunately, `tidy()` does not work for `mstate` and `probtrans` objects, so tidying those objects takes more work. <!-- Once I better understand the relationship between KM estimates, Cumulative Incidence Functions, and transition probabilities, I may bypass the `mstate` package. The inconsistency in naming and structure of various survival analysis objects is very annoying.-->
 
 
-## the `mstate` Model
+## Using `mstate`
 First, we model the most common stages that rules go through with no covariates, only the dates of transition in and out of the pre-NPRM and NPRM stages. We use the DOT data with one observation per rule per stage.
 
 ### Tidy transition event data
@@ -124,6 +124,7 @@ events <- as.character(unique(d$event))
 d %<>% select(-event, -transition_date) %>% distinct()
 
 ###############################
+# Merge covariats back into event data
 # STEP 2: MERGE BACK WITH DATA
 d %<>% left_join(original) %>% ungroup() %>% arrange(id) 
 
