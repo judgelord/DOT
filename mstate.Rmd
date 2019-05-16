@@ -342,7 +342,7 @@ ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
   geom_ribbon(aes(ymax = estimate + 1.96*std.error, 
                   ymin = estimate - 1.96*std.error),
               alpha = .2, color = NA) + 
-  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black") +
+  geom_text(aes(y = max, x = max(time/365), label = paste0(round(max*100), "%")), hjust = 1, vjust = -.2, color = "black", check_overlap = T) +
   labs(x = "Years" , y = "Cumulative Incidence Function
        normalized by stage") +
   facet_grid(. ~ from) + # for comparing states without covariates 
@@ -353,7 +353,7 @@ ggplot(aes(x = time/365, color = Transition, fill = Transition) ) +
 ### How long does a given transition take? (by major vs. non-major rules)
 
 Now the mstate model with a covariate: 
-```{r mstate-major}
+```{r mstate-major-rules-rate}
 fit <- survfit(Surv(time, status * as.numeric(transition), type = "mstate") ~ MAJOR + strata(transition),
                data = d) %>% tidy()
 # FIXME
@@ -531,7 +531,7 @@ ggplot(f) +
   theme_bw()
 ``` 
 
- 
+### Most common transition patterns
 
 ```{r most-common-transitions, include=FALSE, eval=FALSE}
 # However, there are more possible transitions. Here are the most common patterns:
@@ -543,15 +543,17 @@ dotStage %>%
   filter(!is.na(initiated)) %>% 
   arrange(DOTdate)%>% 
   filter(STAGE != "Completed Actions") %>% 
+  select(RIN, STAGE) %>% distinct() %>%
   group_by(RIN) %>%
   mutate(stages = paste(STAGE, collapse = "; ")) %>% ungroup() %>% 
   mutate(stages = paste("Initiated;", stages)) %>% 
   group_by(stages) %>% summarise(N = n()) %>% select(N, stages) %>%
-  filter(N>4) %>% 
+  filter(N>9) %>% 
   arrange(-N) %>% 
   kable() #%>% kable_styling()
 ```
 
+Without "Undetermined," "Completed," or "Other"
 ```{r most-common-transitions-named, include=FALSE, eval=FALSE}
 # And without "Undetermined" status:
 
@@ -561,14 +563,53 @@ dotStage %>%
   distinct() %>% 
   filter(!is.na(initiated)) %>% 
   arrange(DOTdate)%>% 
-  filter(!STAGE %in% c("Undetermined","Completed Actions") )%>% 
+  filter(!STAGE %in% c("Undetermined","Completed Actions", "Other") )%>% 
+  select(RIN, STAGE) %>% distinct() %>%
   group_by(RIN) %>%
   mutate(stages = paste(STAGE, collapse = "; ")) %>% ungroup() %>% 
   mutate(stages = paste("Initiated;", stages)) %>% 
-  group_by(stages) %>% summarise(N = n()) %>% select(N, stages) %>%
-  filter(N>4) %>% 
+  group_by(stages) %>% 
+  summarise(N = n()) %>% 
+  select(N, stages) %>%
+  filter(N>9) %>% 
   arrange(-N) %>% 
   kable() #%>% kable_styling()
 ``` 
 
+Uncommon patterns
+```{r uncommon-transitions-named, include=FALSE, eval=FALSE}
+# And without "Undetermined" status:
 
+# identify previous stages in the data (need to use previous stage var to supplement this)
+# lots of obs have "completed actions as the stage; hoping we can do better; this is not what we wanted to get from UA/ORIA data"
+dotStage %>%
+  distinct() %>% 
+  filter(!is.na(initiated)) %>% 
+  arrange(DOTdate)%>% 
+  filter(!STAGE %in% c("Undetermined","Completed Actions","Other") )%>% 
+  select(RIN, STAGE) %>% distinct() %>%
+  group_by(RIN) %>%
+  mutate(stages = paste(STAGE, collapse = "; ")) %>% ungroup() %>% 
+  mutate(stages = paste("Initiated;", stages)) %>% 
+  group_by(stages) %>% 
+  summarise(N = n(),
+            RINs = str_c(RIN, collapse = ";")) %>% 
+  select(N, stages, RINs) %>%
+  filter(N<10) %>% 
+  arrange(-N) %>% 
+  kable() #%>% kable_styling()
+``` 
+
+# Reporting results
+
+The values at which we fix covariates matter for the translation of coefficients to hazards; it is not just an intercept shift like linear regression. Consider this simple example:  
+
+$\lambda_t = \lambda_0*e^{(x_1*\beta_1 + x_2*beta_2)}.$
+
+Let $\beta_1$ and $beta_2 = 1$ and $\lambda_0 = 1$
+
+If we fix $x1$ at 1: $\lambda_t = e^{(1 + x_2)} = e*e^{(x_2)}$
+
+If we fix x1 at 2: $\lambda_t = e^{(2 + x_2)} = e^2*e^{(x_2)}$
+
+So, we need to think carefully about the covariate values at which we want to report effects. 

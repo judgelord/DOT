@@ -39,13 +39,23 @@ Our findings hold important implications for our understanding of transparency a
 
 - Find a method to identify the year of each rule's authorizing statute
 
-- Add OIRA report dates 
-
 - Infer missing withdrawal dates from the date last observed in stage withdrawal
 
 - Add subagency administrators and secretary data
 
 - OPM staff resources data for years other than 2016 
+
+- Select occupations and add [employee data](https://judgelord.github.io/FederalEmployees/summary.html#regulatory-budget) on rulewriting teams. If agencies do not use contractors too much, then the number of people per rule seems like a good metric. We may want to bring in budget when we talk about political attention, but in general, I'm not sure that we should assume that the budget has an effect independent of staffing. 
+
+- add summary plot of distribution of initiation reasons
+
+- buckets for reasons for delay 
+
+- add acting head data from Susan's email
+
+- update data with new DOT reports 
+
+- merge in number of comments
 
 ### Model
 
@@ -55,9 +65,23 @@ Our findings hold important implications for our understanding of transparency a
 
 - statistics at 50 percent 
 
+- describe `mstate` output 
+
+- describe cox coef interpretation 
+
+- rewrite with "stages" 
+
+- add model covars
+
+- identify sensible values of covars at which to report results
+
+### Done
+
+- add OIRA report dates 
+
 - figure out `msfit` newdata argument
 
-- describe `mstate` output 
+- drop IFRs (currently, IFR publication dates are dropped from models, but we are still using the NPRM dates from these observations and any Final Rule dates)
 
 ---
 
@@ -260,7 +284,7 @@ Notice how the DOT (esp. FTA and FHA) initiated a large number of projects short
 ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other", "Final Rule", "Interim Final Rule"))) +
   stat_count(aes(DOTdate)) +
   facet_grid(STAGE~., scales = "free_y") +
-  labs(title = "Active per Month by Stage", x = "")
+  labs(title = "Active Rulemaking Projects per Month by Stage", x = "")
   #scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%y"), minor_breaks=NULL)
 ```
 
@@ -270,23 +294,26 @@ ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other",
 ggplot(dotMonthly %>% ungroup()) +
   stat_count(aes(DOTdate)) +
   facet_grid(AGENCY~., scales = "free_y") +
-  labs(title = "Active per Month by Agency", x = "") + 
+  labs(title = "Active Rulemaking Projects per Month by Agency", x = "") + 
   theme(strip.text.y = element_text(angle = 0))
 ```
 
 
 ```{r hist-stages-published, include=FALSE}
 # publication histogram 
-
-  ggplot(dotRIN %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Final Rule", "Interim Final Rule")), 
-         aes(publicationactual, na.rm = T)) +
-    geom_histogram(na.rm = T, bins = length(unique(dotRIN$year)))  + 
+dotRIN %>% 
+  filter(STAGE %in% c("Withdrawal","Proposed Rule", "Final Rule", "Interim Final Rule")) %>%
+  drop_na(publicationactual) %>% 
+  ggplot() + 
+  aes(x = str_sub(publicationactual,1,4), na.rm = T) +
+    geom_bar(na.rm = T, stat = "count")  + 
     facet_grid(STAGE~., scales = "free_y") +
-  labs(title = "Published by Stage", x = "")
+  labs(title = "Published per year", x = "")
   #scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%y"), minor_breaks=NULL)
 ```
 
-```{r completion-time-by-promt}
+Rulemaking Projects Completed 2008-2018
+```{r completion-time-by-promt, fig.height=8}
 # Consolidate like stages for plotting:
 dotRIN$STAGE %<>% {gsub("Terminat.*", "Withdrawal",.)}
 dotRIN$STAGE %<>% {gsub(".2$", "", .)}
@@ -298,15 +325,24 @@ dotRIN$STAGE %<>% {gsub("Prerule", "Proposed Rule", .)}
 dotRIN$STAGE %<>% {gsub("Interim Final Rule", "Final Rule", .)}
 dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
 
-  dotRIN %>% filter(STAGE %in% c("Final Rule", "Withdrawal")) %>%  mutate(end = if_else( is.na(enddate) & DOTdate != "2018-09-01", reportdate, enddate) ) %>% #filter(prompt %in% c("Secretarial/Head of Operating Administration Decision","2011 Retrospective Regulatory Review" , "International Agreement", Settlement Agreement") ) %>% 
+  dotRIN %>% filter(STAGE %in% c("Final Rule", "Withdrawal")) %>%  
+    mutate(end = if_else( is.na(enddate) & DOTdate != "2018-09-01", reportdate, enddate) ) %>% #filter(prompt %in% c("Secretarial/Head of Operating Administration Decision","2011 Retrospective Regulatory Review" , "International Agreement", Settlement Agreement") ) %>%
+  drop_na(initiated, end, prompt) %>%  
+    filter(prompt != "None") %>% 
   ggplot() +  
-  geom_point(aes(x = initiated, y = end, color = prompt, shape = STAGE)) + 
-  scale_y_date(limits = c(as.Date("2008-01-01"),as.Date("2019-01-01")),
+  geom_segment(aes(y = reorder(RIN,initiated), yend = reorder(RIN,initiated), x = initiated, xend = end, color = prompt), alpha = .5, size = 1) +
+  #geom_point(aes(y = RIN, x = initiated, color = prompt), shape = ">") + 
+  geom_point(aes(y = reorder(RIN,initiated), x = end, color = prompt, shape = STAGE)) + 
+  scale_x_date(limits = c(as.Date("1993-01-01"),as.Date("2019-01-01")),
                breaks=date_breaks(width = "1 year"), 
              labels = date_format("%Y") )+
 
     #geom_smooth(aes(x= if_else(initiated > as.Date("2008-01-01"), initiated, NA), y= enddate), method = "lm" ) +
-  labs(title = "Completed Rulemaking Projects by Prompting Reason and Outcome", x = "Initiated", y = "Published", color = "Prompt to Initiate Project", shape = "")
+  labs(title = "", x = "", y = "RIN by Date Initiated", color = "Reason given to Initiate Rulemaking", shape = "") +
+  theme(axis.text.y = element_text(size = 3, vjust = 1),
+        axis.text.x = element_text(angle = 45,
+                                   hjust = 1),
+        axis.ticks = element_blank() ) 
 ```
 
 
