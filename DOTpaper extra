@@ -1,0 +1,4 @@
+: 
+  template: article-template.tex
+
+date: "`r format(Sys.time(), '%B %d, %Y')`"

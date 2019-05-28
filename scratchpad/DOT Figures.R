@@ -1,9 +1,14 @@
 source("setup.R")
 
-d <- DOTmonthly
+load(here("data/DOT-monthly.Rdata"))
+load(here("data/DOT-perRule.Rdata"))
+d <- dotMonthly
+DOTmonthly <- dotMonthly
 summary(d)
 
-d %<>% mutate(agency = RIN)
+d %<>% mutate(agency = RIN,
+              stage = STAGE)
+
 d$agency %<>% substr(3, 4) %>% 
 {gsub("20", "FAA", .)} %>%
 {gsub("05", "SEC", .)} %>%
@@ -25,11 +30,11 @@ ggplot(d, aes(x=RIN, y=DOTdate)) +
   geom_point(aes(color = factor(color), 
                  #fill = factor(color), 
                  shape = factor(stage)), size = .5) + 
-  scale_colour_manual(values = c("black", "green","red","yellow"), 
-                      labels = c("No Timeline",
-                      "On Time",
-                      "Delayed",
-                      "Likely Delayed") )+
+  # scale_colour_manual(values = c("black", "green","red","yellow"), 
+  #                     labels = c("No Timeline",
+  #                     "On Time",
+  #                     "Delayed",
+  #                     "Likely Delayed") )+
   coord_flip() +
   scale_y_date(lim = c(as.Date("2008-01-01"), as.Date("2018-01-01")),
              breaks=date_breaks(width = "1 year"), 
@@ -192,6 +197,7 @@ ggplot(dotRIN%>% filter(enddate > as.Date("2008-01-01"))) +
   xlab("Publication")+ylab("Initiated")
 
 # Initiated * NPRM
+# FIXME
 ggplot(dotRIN%>% filter(NPRMpublished > as.Date("2008-01-01"))) + 
   geom_point(aes(x=NPRMpublished, y= initiated, color=color)) +
   geom_smooth(aes(x=NPRMpublished, y = initiated), method='auto')+
@@ -213,7 +219,7 @@ ggplot(dotRIN%>% filter(NPRMpublished > as.Date("2008-01-01"))) +
 
 
 # DELAY 
-
+# FIXME
 DOTmonthly %<>% 
   mutate(coordinationDelay = {1*grepl("Additional coordination necessar", paste(.$whydelay, .$whydelay1, .$whydelay2, .$whydelay3, .$whydelay4, .$whydelay5, .$whydelay6, .$whydelay7))}) %>% 
   mutate(staffingDelay = 1*grepl("Lack of staffing", paste(.$whydelay, .$whydelay1, .$whydelay2, .$whydelay3, .$whydelay4, .$whydelay5, .$whydelay6, .$whydelay7))) %>% 

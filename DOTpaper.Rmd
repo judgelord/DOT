@@ -1,46 +1,35 @@
 ---
-# number_sections: true
-date: "`r format(Sys.time(), '%B %d, %Y')`"
-output:
-   pdf_document:
-    toc: false
-template: article-template.tex
+output: 
+  word_document:
+  # pdf_document: 
+  #   template: article-template.tex
+
 title: "The Two Faces of Bureaucratic Policymaking"
-
-# author:
-# - name: Devin Judge-Lord
-#   affiliation: University of Wisconsin--Madison
-# - name: Susan Webb Yackee
-#   affiliation: University of Wisconsin--Madison
-
+author:
+- name: Devin Judge-Lord
+  affiliation: University of Wisconsin--Madison
+- name: Susan Webb Yackee
+  affiliation: University of Wisconsin--Madison
 
 abstract: Administrative rulemaking is often presented as a straightforward translation of legislative delegations into agency rules, where bureaucrats adopt their most preferred policy given their constraints, often speeding up or slowing down the policy process to do so. The rulemaking process is indeed highly formulaic, requiring publication of a draft, external review, and public comment before a final rule is published. However, much of the politics of rulemaking may play out in the less formal and transparent process before a draft policy is published. In this stage, different priorities and constraints may drive decisions about which draft policies are published and when. Theories of policymaking suggest that the politics of rulemaking may differ significantly in the pre-proposal stage. Yet, this part of the policy process has largely eluded quantitative study due to a lack of systematic data. This paper begins to fill this gap. We introduce a new dataset based on thousands of monthly internal project status reports by the U.S. Department of Transportation that allow us to track a rulemaking effort from its origin date through its finalization.  Additionally, we develop several novel measures of prioritization and constraints that we measure both before and after a draft rule is made public,  including the degree of agency resource constraints, internal agency prioritization, changes in sub-agency political appointees, congressional and presidential attention, and the threat of litigation and sanction by courts. Using these new data and measures, we model the drivers of prioritization and constraint as a multi-stage policy process and identify different political forces at work in each stage. Specifically, we use a multi-stage duration model to test factors that may affect the timing of rules being proposed or finalized thus identify predictors of prioritization and delay. Previous research suggests that that greater internal agency resources—in terms of personnel and budgets—will speed up rulemaking during the largely opaque pre-proposal stage, while attention from external actors, including Congress and the president, will speed up rulemaking during the more transparent notice and comment period. Our data and measures allow new tests of these theories. We show that resources, complexity, and salience have different effects on the speed of rule-writing across different stages. Our findings hold important implications for our understanding of transparency and bureaucratic policymaking within a representative democracy.
-
 ---
-
-```{r setup, include=FALSE}
-source("setup.R")
-
-# ABSTRACT NOTES
-# https://docs.google.com/document/d/1ZfwtacaTX3zldbmpV0rx868fiasGo-2dF3ZMkSWYk6s/edit?usp=sharing
-
-# 2016 OPM fedscope text files
-  # https://www.dropbox.com/s/xe74anownix98bn/FederalEmployees.csv?dl=0
-```
 
 # Introduction
 
-Rulemaking is important...
+Rulemaking is important.
 
-Scholars have thus far focused on the second, more transparent phase of rulemaking after proposed rules are published...
+Scholars have thus far focused on the second, more transparent phase of rulemaking after proposed rules are published.
 
-Yet much happens before proposed rules are published...
+Yet much happens before proposed rules are published.
 
 We address this gap.
 
 We make three contributions: 
+
 - We describe when and why rulemaking projects get started, providing the first systematic analysis into how long it takes to write a rule. 
+
 - We compare the factors that influence the fate of a rulemaking project before and after an NPRM is published.
+
 - We assess why rulemaking projects move slower or faster at pre- and post- NPRM stages. 
 
 In doing so, we make several methodological contributions. First, we apply multi-state duration modeling to policymaking. Most policy processes involve multiple stages marked by important transitions, such as the publication of a draft or approval of different branches of government, but empirical work rarely models policymaking as a multi-stage process. Furthermore, we develop a suite of new, more refined measures of factors hypothesized to influence agency policymaking, including agency resources and leadership, congressional attention and opposition, and the threat of litigation. 

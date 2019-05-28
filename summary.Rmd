@@ -37,6 +37,8 @@ Our findings hold important implications for our understanding of transparency a
 
 ### Data
 
+- add acting apointee data for testing 
+
 - Find a method to identify the year of each rule's authorizing statute
 
 - Infer missing withdrawal dates from the date last observed in stage withdrawal
@@ -225,7 +227,7 @@ RINs where the NPRM is unclear:
 ### Combining data sources
 
 Adding DOT Internal Status Reports to OIRA and Unified Agenda Reports gives a richer picture of rulemaking. Data by RIN, date, and source:
-```{r timeline, fig.height = 17}
+```{r timeline-data-coverage, fig.height = 17}
 # If project is ongoing, define enddate as date last observed (for plotting active project status)
 dotMonthly %<>% mutate(end = if_else( is.na(enddate), reportdate, enddate) )
 
@@ -271,6 +273,35 @@ ggplot(aes(x = RIN)) +
         legend.position = "top") 
 ```
 
+
+```{r timeline-simple, fig.height = 8}
+######### TIMELINES #####################
+dotcomplete <- filter(dotMonthly, !is.na(FinalRulePublished) | !is.na(WithdrawalPublished))
+
+dotcomplete2008 <- subset(dotcomplete, initiated>"2008-01-01")
+
+
+# TOY Timeline
+ggplot(dotcomplete, aes(x=RIN)) +
+  # facet_grid(agency ~ .) +
+  geom_linerange(aes(ymin=initiated, ymax=enddate, color="black"), size=.1) +
+  #geom_point(aes(y=WithdrawalPublished, color="red", shape = 4), size=.4) + 
+  geom_point(aes(y=WithdrawalPublished, color="red"), shape = 15, size=.4) + 
+  geom_point(aes(y=FinalRulePublished, color="black"), shape = 15, size=.4) + 
+  coord_flip() +  
+  scale_y_date(lim = c(as.Date("1988-01-01"), as.Date("2018-01-01")),
+               breaks=date_breaks(width = "1 year"), labels = date_format("%y"),
+               minor_breaks=NULL)+
+  ggtitle('Complete Cases (Final or Withdrawal Published, N = 163)')+ xlab("RIN")+ylab("Year")+
+  scale_color_identity("",guide="legend", labels = c("Final Rule", "Withdrawal"))+
+  theme(axis.text.y =
+          element_text(size  =2,
+                       angle = 0,
+                       hjust = 1,
+                       vjust = 1)) 
+
+```
+
 Notice how the DOT (esp. FTA and FHA) initiated a large number of projects shortly after Obama's reelection, probably waiting for assurance that they would be able to complete their work.  
 
 
@@ -279,6 +310,7 @@ Notice how the DOT (esp. FTA and FHA) initiated a large number of projects short
 
 ---
 
+## Rulemaking stages
 ```{r stages-hist}
 # stage histogram 
 ggplot(dotMonthly %>% filter(STAGE %in% c("Withdrawal","Proposed Rule", "Other", "Final Rule", "Interim Final Rule"))) +
@@ -345,7 +377,28 @@ dotRIN$STAGE %<>% {gsub("SNPRM", "Proposed Rule", .)}
         axis.ticks = element_blank() ) 
 ```
 
+## Time from rulemaking project initiation to completion
+```{r delay, eval=FALSE}
+# Initiated * Published Fit (takes 4 years from initiated)
+ggplot(dotRIN#%>% filter(enddate > as.Date("2008-01-01"))
+       ) + 
+  geom_point(aes(x=FinalRulePublished, y= initiated, color=color)) +
+  geom_point(aes(WithdrawalPublished, initiated), color = "red", shape = 4) +
+  geom_smooth(aes(x=FinalRulePublished, y = initiated), method='auto')+
+  #FIXME
+  # scale_y_date(breaks=date_breaks(width = "1 year"), labels = date_format("%Y"),
+  #              minor_breaks=NULL)+
+  # scale_x_date(breaks=date_breaks(width = "1 year"), labels = date_format("\'%y"),
+  #              minor_breaks=NULL) + 
+  scale_color_identity("",guide="legend", labels = c("No Timeline",
+                                                     "On Time",
+                                                     "Delayed",
+                                                     "Likely Delayed"))+ 
+  ggtitle('Significant DOT Final Rules and Withdrawals Published 2008 - 2017
+          (The average Final Rule takes 4 years, but is scheduled for less)') + 
+  xlab("Publication")+ylab("Initiated")
 
+```
 
 
 
